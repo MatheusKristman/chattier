@@ -9,7 +9,7 @@ export const Header = () => {
     const { openMobileMenu } = useHeaderStore();
 
     return (
-        <header className="w-full pt-4 px-6 mx-auto flex items-center justify-between md:px-16 md:pt-6">
+        <header className="w-full pt-4 px-6 flex items-center justify-between md:px-16 md:pt-6 lg:container lg:mx-auto">
             <Link href="/" className="relative h-10 w-32">
                 <Image src="/images/logo.svg" alt="Logo" fill className="object-contain" />
             </Link>
@@ -36,7 +36,7 @@ export const Header = () => {
                     <a href="#about">Sobre</a>
                 </li>
 
-                <li className="px-6 h-12 bg-white  flex items-center justify-center rounded-[30px] cursor-pointer">
+                <li className="px-6 h-12 bg-white  flex items-center justify-center rounded-[30px] cursor-pointer hover:shadow-lg hover:shadow-[#b64862] transition-shadow">
                     <Link href="/cadastro" className="text-gradient">
                         Cadastre-se
                     </Link>

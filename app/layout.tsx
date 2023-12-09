@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 
 const poppins = Poppins({
-    subsets: ["latin-ext"],
+    subsets: ["latin"],
     weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 

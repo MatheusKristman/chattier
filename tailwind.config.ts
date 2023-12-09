@@ -25,6 +25,11 @@ module.exports = {
                 "colored-primary": "linear-gradient(90deg, #F85C7F 0%, #6E80F7 100%)",
                 "colored-primary-reversed": "linear-gradient(90deg, #6E80F7 0%, #F85C7F 100%)",
                 "colored-secondary": "linear-gradient(90deg, #523BFE 0%, #9DFACE 100%)",
+                "hero-banner-left-icon": "url('/images/hero-left-icon.png')",
+                "hero-banner-right-icon": "url('/images/hero-right-icon.png')",
+                "hero-node": "url('/images/node.svg')",
+                "hero-highlight": "url('/images/highlight.svg')",
+                "benefit-blob": "url('/images/benefit-blob.svg')",
             },
             colors: {
                 border: "hsl(var(--border))",
@@ -60,6 +65,7 @@ module.exports = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                "red-error": "#FB5151",
             },
             borderRadius: {
                 lg: "var(--radius)",

@@ -20,7 +20,7 @@ export const MobileHeaderMenu = () => {
                         animate="animate"
                         exit="exit"
                         variants={mobileMenuAnimation}
-                        className="absolute w-full pb-6 bg-gray-primary/50 backdrop-blur-sm top-0 left-0 rounded-bl-[30px] rounded-br-[30px] pt-4 px-6 md:px-16 md:pt-6"
+                        className="absolute w-full pb-6 bg-gray-primary/50 backdrop-blur-sm top-0 left-0 rounded-bl-[30px] rounded-br-[30px] pt-4 px-6 z-50 md:px-16 md:pt-6 lg:hidden"
                     >
                         <div className="w-full flex items-center justify-between">
                             <Link href="/" className="relative h-10 w-32">
