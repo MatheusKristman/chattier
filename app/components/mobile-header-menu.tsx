@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useHeaderStore } from "@/stores/use-header-store";
@@ -9,6 +10,13 @@ import { mobileMenuAnimation } from "@/constants/framer-animation/mobile-menu-an
 
 export const MobileHeaderMenu = () => {
     const { isMobileMenuOpen, closeMobileMenu } = useHeaderStore();
+
+    const router = useRouter();
+
+    function navigateToRegisterPage() {
+        closeMobileMenu();
+        router.push("/cadastro");
+    }
 
     return (
         <>
@@ -55,7 +63,10 @@ export const MobileHeaderMenu = () => {
                                 <a href="#about">Sobre</a>
                             </li>
 
-                            <li className="w-full h-12 bg-white  flex items-center justify-center rounded-[30px]">
+                            <li
+                                onClick={navigateToRegisterPage}
+                                className="w-full h-12 bg-white  flex items-center justify-center rounded-[30px]"
+                            >
                                 <Link href="/cadastro" className="text-gradient">
                                     Cadastre-se
                                 </Link>

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import {
     heroMainAnimation,
@@ -12,6 +13,12 @@ import {
 } from "@/constants/framer-animation/hero";
 
 export const Hero = () => {
+    const router = useRouter();
+
+    function navigateToRegisterPage() {
+        router.push("/cadastro");
+    }
+
     return (
         <motion.main
             initial="initial"
@@ -61,6 +68,7 @@ export const Hero = () => {
                         viewport={{ once: true }}
                         variants={heroButtonAnimation}
                         type="button"
+                        onClick={navigateToRegisterPage}
                         className="relative py-3 px-6 bg-colored-primary rounded-[30px] w-fit mx-auto text-white font-medium text-lg after:content-[''] after:bg-hero-highlight after:bg-no-repeat after:bg-contain after:w-10 after:h-10 after:absolute after:-top-4 after:-right-9 after:z-10 before:content-[''] before:bg-colored-primary before:blur-lg before:w-full before:h-[45px] before:absolute before:top-2 before:left-0 before:-z-10 before:opacity-50"
                     >
                         Explore Agora

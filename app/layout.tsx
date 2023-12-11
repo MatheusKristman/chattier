@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="pt-BR">
-            <body className={cn(poppins.className, "bg-gray-primary")}>{children}</body>
+            <body className={cn(poppins.className, "bg-gray-primary")}>
+                <Toaster />
+                {children}
+            </body>
         </html>
     );
 }

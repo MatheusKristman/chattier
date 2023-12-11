@@ -2,11 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { useHeaderStore } from "@/stores/use-header-store";
 
 export const Header = () => {
     const { openMobileMenu } = useHeaderStore();
+    const router = useRouter();
+
+    function navigateToRegisterPage() {
+        router.push("/cadastro");
+    }
 
     return (
         <header className="w-full pt-4 px-6 flex items-center justify-between md:px-16 md:pt-6 lg:container lg:mx-auto">
@@ -36,7 +42,10 @@ export const Header = () => {
                     <a href="#about">Sobre</a>
                 </li>
 
-                <li className="px-6 h-12 bg-white  flex items-center justify-center rounded-[30px] cursor-pointer hover:shadow-lg hover:shadow-[#b64862] transition-shadow">
+                <li
+                    onClick={navigateToRegisterPage}
+                    className="px-6 h-12 bg-white  flex items-center justify-center rounded-[30px] cursor-pointer hover:shadow-lg hover:shadow-[#b64862] transition-shadow"
+                >
                     <Link href="/cadastro" className="text-gradient">
                         Cadastre-se
                     </Link>

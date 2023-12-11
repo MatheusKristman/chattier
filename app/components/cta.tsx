@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 import {
     ctaContainerInfoAnimation,
@@ -10,6 +11,12 @@ import {
 } from "@/constants/framer-animation/cta";
 
 export const CTA = () => {
+    const router = useRouter();
+
+    function navigateToRegisterPage() {
+        router.push("/cadastro");
+    }
+
     return (
         <section className="w-full px-6 pt-40 mb-24 md:px-16 md:mb-36 lg:container lg:mx-auto">
             <div className="relative bg-colored-primary-reversed w-full rounded-[60px] px-6 py-9 md:p-14 md:rounded-[100px] lg:flex lg:flex-row-reverse lg:items-center lg:h-[350px] lg:rounded-[125px] lg:px-24">
@@ -56,6 +63,7 @@ export const CTA = () => {
                         <motion.button
                             variants={ctaInfoAnimation}
                             type="button"
+                            onClick={navigateToRegisterPage}
                             className="bg-white px-6 py-2 w-fit rounded-[30px]"
                         >
                             <span className="text-gradient text-xl">Comece agora</span>
