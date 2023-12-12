@@ -7,6 +7,11 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import axios from "axios";
+import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -72,6 +77,16 @@ export const RegisterForm = () => {
             isCheckboxConfirmed: false,
         },
     });
+    const session = useSession();
+    const router = useRouter();
+    const origin =
+        typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
+
+    useEffect(() => {
+        if (session.status === "authenticated") {
+            router.replace(`${origin}/chat`);
+        }
+    }, [session.status]);
 
     function onSubmit(values: z.infer<typeof registerFormSchema>) {
         console.log(values);
@@ -81,6 +96,33 @@ export const RegisterForm = () => {
                 position: "bottom-right",
             });
         }
+
+        axios
+            .post("/api/register", values)
+            .then((res) => {
+                if (!res.data.email) {
+                    toast.error("Ocorreu um erro no cadastro, verifique e tente novamente");
+                }
+
+                signIn("credentials", {
+                    ...res.data,
+                    redirect: false,
+                }).then((callback) => {
+                    if (callback?.error) {
+                        toast.error(
+                            "Ocorreu um erro durante o cadastro, verifique e tente novamente",
+                        );
+                    }
+
+                    if (callback?.ok) {
+                        router.replace(`${origin}/chat`);
+                    }
+                });
+            })
+            .catch((error) => {
+                toast.error(error.response.data);
+                console.error(error);
+            });
     }
 
     return (

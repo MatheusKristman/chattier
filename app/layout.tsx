@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
+import AuthContext from "@/context/AuthContext";
+
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
@@ -20,8 +22,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="pt-BR">
             <body className={cn(poppins.className, "bg-gray-primary")}>
-                <Toaster />
-                {children}
+                <AuthContext>
+                    <Toaster />
+                    {children}
+                </AuthContext>
             </body>
         </html>
     );

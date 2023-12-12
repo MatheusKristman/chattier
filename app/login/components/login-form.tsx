@@ -7,6 +7,10 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import axios from "axios";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,9 +49,44 @@ export const LoginForm = () => {
             password: "",
         },
     });
+    const router = useRouter();
+    const session = useSession();
+    const origin =
+        typeof window !== "undefined" && window.location.origin ? window.location.origin : "";
+
+    useEffect(() => {
+        if (session.status === "authenticated") {
+            router.replace(`${origin}/chat`);
+        }
+    }, [session.status])
 
     function onSubmit(values: z.infer<typeof loginFormSchema>) {
         console.log(values);
+
+        axios
+            .post("/api/login", values)
+            .then((res) => {
+                signIn("credentials", { ...res.data, redirect: false })
+                    .then((callback) => {
+                        console.log(callback);
+
+                        if (callback?.error) {
+                            toast.error("Ocorreu um erro no acesso, verifique e tente novamente");
+                        }
+
+                        if (callback?.ok) {
+                            router.replace(`${origin}/chat`);
+                        }
+                    })
+                    .catch((error) => {
+                        toast.error(error.response.data);
+                        console.error(error);
+                    });
+            })
+            .catch((error) => {
+                toast.error(error.response.data);
+                console.error(error);
+            });
     }
 
     return (
