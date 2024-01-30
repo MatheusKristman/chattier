@@ -5,11 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";
 
 import { useHeaderStore } from "@/stores/use-header-store";
 import { mobileMenuAnimation } from "@/constants/framer-animation/mobile-menu-animation";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 
 export const MobileHeaderMenu = () => {
   const { isMobileMenuOpen, closeMobileMenu } = useHeaderStore();
