@@ -32,6 +32,9 @@ module.exports = {
         "hero-highlight": "url('/images/highlight.svg')",
         "benefit-blob": "url('/images/benefit-blob.svg')",
         "search-icon": "url('/images/search-icon.svg')",
+        "gallery-icon": "url('/images/gallery-icon.svg')",
+        "send-message-icon": "url('/images/send-message-icon.svg')",
+        "trash-icon": "url('/images/trash.svg')",
       },
       colors: {
         border: "hsl(var(--border))",

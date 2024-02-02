@@ -19,8 +19,6 @@ export const Header = () => {
     router.push("/cadastro");
   }
 
-  console.log(session);
-
   return (
     <header className="w-full pt-4 px-6 flex items-center justify-between md:px-16 md:pt-6 lg:container lg:mx-auto">
       <Link href="/" className="relative h-10 w-32">

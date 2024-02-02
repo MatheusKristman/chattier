@@ -8,10 +8,10 @@ import { ChatIllustration } from "./components/chat-illustration";
 
 const ChatPage = () => {
   return (
-    <section className="w-full flex">
+    <>
       <Contacts />
       <ChatIllustration />
-    </section>
+    </>
   );
 };
 
