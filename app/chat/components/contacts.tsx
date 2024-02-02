@@ -10,7 +10,7 @@ import { ProfileBox } from "./profile-box";
 import { NewConversationButton } from "./new-conversation-button";
 import { cn } from "@/lib/utils";
 
-export const Contacts = ({ conversationId }: { conversationId: string }) => {
+export const Contacts = ({ conversationId }: { conversationId?: string }) => {
   return (
     <div
       className={cn(
@@ -41,6 +41,8 @@ export const Contacts = ({ conversationId }: { conversationId: string }) => {
       </div>
 
       <div className="w-full flex flex-col">
+        <ConversationBox />
+        <ConversationBox />
         <ConversationBox />
       </div>
     </div>
