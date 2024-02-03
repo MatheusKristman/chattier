@@ -51,7 +51,7 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, trigger, session }) {
       if (trigger === "update" && session?.image) {
-        token.image = session.image;
+        token.picture = session.image;
       }
 
       return token;

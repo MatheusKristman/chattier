@@ -11,8 +11,6 @@ export const ourFileRouter = {
     .middleware(async ({ req }) => {
       const session = await getServerSession();
 
-      console.log(session);
-
       if (!session || !session?.user) {
         throw new UploadThingError("Não autorizado");
       }
@@ -30,10 +28,6 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Upload complete for userId:", metadata.userId);
-
-      console.log("file url", file.url);
-
       await prisma.user.update({
         where: {
           id: metadata.userId,

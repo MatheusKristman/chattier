@@ -2,7 +2,15 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 
-export const BlockedProfileBox = () => {
+interface BlockedProfileBoxProps {
+  isUploading: boolean;
+  isSendingImage: boolean;
+}
+
+export const BlockedProfileBox = ({
+  isUploading,
+  isSendingImage,
+}: BlockedProfileBoxProps) => {
   return (
     <div className="w-full flex items-center justify-between">
       <div className="flex items-center gap-x-5">
@@ -19,6 +27,7 @@ export const BlockedProfileBox = () => {
       </div>
 
       <Button
+        disabled={isUploading || isSendingImage}
         size="lg"
         className="bg-transparent border border-green-500 rounded-lg text-green-500 font-medium text-base hover:bg-green-500/20"
       >

@@ -23,7 +23,7 @@ export const ProfileModal = () => {
       setProfilePhotoURL(res[0].url);
       setProfilePhoto(null);
 
-      update({ image: res[0].url });
+      await update({ image: res[0].url });
 
       if (fileInput.current) {
         fileInput.current.value = "";
@@ -35,18 +35,12 @@ export const ProfileModal = () => {
       );
     },
   });
-  const fileInput = useRef<HTMLInputElement | null>(null);
 
-  console.log(session);
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   const [isSendingImage, setIsSendingImage] = useState<boolean>(false);
   const [profilePhoto, setProfilePhoto] = useState<File[] | null>(null);
   const [profilePhotoURL, setProfilePhotoURL] = useState<string>("");
-
-  useEffect(() => {
-    console.log(profilePhoto);
-    console.log(profilePhotoURL);
-  }, [profilePhoto, profilePhotoURL]);
 
   function handleImage(event: React.ChangeEvent<HTMLInputElement>) {
     setIsSendingImage(true);
@@ -73,6 +67,15 @@ export const ProfileModal = () => {
     setIsSendingImage(false);
   }
 
+  function cancelPhotoChange() {
+    if (fileInput.current) {
+      fileInput.current.value = "";
+    }
+
+    setProfilePhotoURL("");
+    setProfilePhoto(null);
+  }
+
   return (
     <>
       {isProfileModalOpen && (
@@ -81,7 +84,7 @@ export const ProfileModal = () => {
             <div className="flex justify-end">
               <Button
                 onClick={closeProfileModal}
-                disabled={isUploading}
+                disabled={isUploading || isSendingImage}
                 className="bg-transparent hover:bg-transparent"
               >
                 <X size="40px" strokeWidth="1.5" color="#FFFFFF" />
@@ -120,7 +123,7 @@ export const ProfileModal = () => {
                     id="profilePhoto"
                     name="profilePhoto"
                     className="hidden"
-                    disabled={isUploading}
+                    disabled={isUploading || isSendingImage}
                     onChange={(event) => handleImage(event)}
                   />
 
@@ -128,7 +131,7 @@ export const ProfileModal = () => {
                     <div className="flex items-center gap-x-4">
                       <Button
                         onClick={() => startUpload(profilePhoto)}
-                        disabled={isUploading}
+                        disabled={isUploading || isSendingImage}
                         className={cn(
                           "bg-colored-primary text-base text-white font-semibold",
                           { "opacity-70": isUploading }
@@ -144,7 +147,11 @@ export const ProfileModal = () => {
                         )}
                       </Button>
 
-                      <Button disabled={isUploading} variant="destructive">
+                      <Button
+                        onClick={cancelPhotoChange}
+                        disabled={isUploading || isSendingImage}
+                        variant="destructive"
+                      >
                         <Trash2 color="#FFFFFF" />
                       </Button>
                     </div>
@@ -171,13 +178,16 @@ export const ProfileModal = () => {
               </h5>
 
               <div className="w-full flex flex-col gap-y-9">
-                <BlockedProfileBox />
+                <BlockedProfileBox
+                  isUploading={isUploading}
+                  isSendingImage={isSendingImage}
+                />
               </div>
             </div>
 
             <div className="w-full flex justify-center">
               <Button
-                disabled={isUploading}
+                disabled={isUploading || isSendingImage}
                 className="w-2/4 bg-white space-x-2 rounded-[30px] hover:bg-white hover:shadow-lg hover:shadow-[#b64862] transition-shadow"
               >
                 <LogOut color="#F85C7F" />
