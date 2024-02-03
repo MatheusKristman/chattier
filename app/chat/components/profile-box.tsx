@@ -1,16 +1,19 @@
 "use client";
 
-import useContactStore from "@/stores/use-contact-store";
 import { UserRound } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 // @ts-ignore
 import TailwindColor from "@videsk/tailwind-random-color";
-import { useEffect, useState } from "react";
+
 import { cn } from "@/lib/utils";
+import useContactStore from "@/stores/use-contact-store";
 
 // TODO arrumar responsividade da box quando for uma tela muito pequena
 
 export const ProfileBox = () => {
+  const { data: session } = useSession();
   const { openProfileModal } = useContactStore();
 
   const [defaultUserColor, setDefaultUserColor] = useState("");
@@ -44,10 +47,19 @@ export const ProfileBox = () => {
         <div
           className={cn(
             "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
-            defaultUserColor
+            { defaultUserColor: !session?.user?.image }
           )}
         >
-          <UserRound size="25" />
+          {session?.user?.image ? (
+            <Image
+              src={session.user.image}
+              alt="Foto de perfil"
+              fill
+              className="object-cover object-center"
+            />
+          ) : (
+            <UserRound size="25" />
+          )}
         </div>
 
         <div className="flex flex-col gap-y-1">

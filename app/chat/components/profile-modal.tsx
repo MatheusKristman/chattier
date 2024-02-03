@@ -1,13 +1,77 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { LogOut, Plus, X } from "lucide-react";
+import { Loader2, LogOut, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
+import { toast } from "react-hot-toast";
+import { useUploadThing, uploadFiles } from "@/lib/uploadthing";
+
+import { Button } from "@/components/ui/button";
 import { BlockedProfileBox } from "./blocked-profile-box";
 import useContactStore from "@/stores/use-contact-store";
+import { UploadButton } from "@/lib/uploadthing";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 export const ProfileModal = () => {
+  const { data: session, update } = useSession();
   const { isProfileModalOpen, closeProfileModal } = useContactStore();
+  const { startUpload, isUploading } = useUploadThing("profilePhotoUploader", {
+    onClientUploadComplete: async (res) => {
+      toast.success("Foto de perfil atualizada com sucesso");
+
+      setProfilePhotoURL(res[0].url);
+      setProfilePhoto(null);
+
+      update({ image: res[0].url });
+
+      if (fileInput.current) {
+        fileInput.current.value = "";
+      }
+    },
+    onUploadError: () => {
+      toast.error(
+        "Ocorreu um erro durante o envio da foto de perfil, tente novamente mais tarde"
+      );
+    },
+  });
+  const fileInput = useRef<HTMLInputElement | null>(null);
+
+  console.log(session);
+
+  const [isSendingImage, setIsSendingImage] = useState<boolean>(false);
+  const [profilePhoto, setProfilePhoto] = useState<File[] | null>(null);
+  const [profilePhotoURL, setProfilePhotoURL] = useState<string>("");
+
+  useEffect(() => {
+    console.log(profilePhoto);
+    console.log(profilePhotoURL);
+  }, [profilePhoto, profilePhotoURL]);
+
+  function handleImage(event: React.ChangeEvent<HTMLInputElement>) {
+    setIsSendingImage(true);
+
+    if (!event.target.files) {
+      return;
+    }
+
+    const file = event.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file && file.type.startsWith("image/")) {
+      setProfilePhotoURL(URL.createObjectURL(file));
+      setProfilePhoto([file]);
+      setIsSendingImage(false);
+      return;
+    }
+
+    toast.error("Formato da image é inválido");
+
+    setIsSendingImage(false);
+  }
 
   return (
     <>
@@ -17,6 +81,7 @@ export const ProfileModal = () => {
             <div className="flex justify-end">
               <Button
                 onClick={closeProfileModal}
+                disabled={isUploading}
                 className="bg-transparent hover:bg-transparent"
               >
                 <X size="40px" strokeWidth="1.5" color="#FFFFFF" />
@@ -25,11 +90,65 @@ export const ProfileModal = () => {
 
             <div className="w-full flex justify-center mb-9">
               <div className="flex flex-col items-center gap-y-9">
-                <div
-                  role="button"
-                  className="w-[140px] min-w-[140px] max-w-[140px] h-[140px] min-h-[140px] max-h-[140px] bg-gray-primary rounded-full flex items-center justify-center"
-                >
-                  <Plus size="80px" strokeWidth="0.5" color="#202730" />
+                <div className="flex flex-col items-center gap-y-4">
+                  <label
+                    htmlFor="profilePhoto"
+                    className="relative cursor-pointer w-[140px] min-w-[140px] max-w-[140px] h-[140px] min-h-[140px] max-h-[140px] bg-gray-primary rounded-full overflow-hidden flex items-center justify-center"
+                  >
+                    {profilePhoto || profilePhotoURL ? (
+                      <Image
+                        src={profilePhotoURL}
+                        alt="Foto de perfil"
+                        fill
+                        className="object-cover object-center"
+                      />
+                    ) : session?.user?.image ? (
+                      <Image
+                        src={session.user.image}
+                        alt="Foto de perfil"
+                        fill
+                        className="object-cover object-center"
+                      />
+                    ) : (
+                      <Plus size="80px" strokeWidth="0.5" color="#202730" />
+                    )}
+                  </label>
+
+                  <input
+                    ref={fileInput}
+                    type="file"
+                    id="profilePhoto"
+                    name="profilePhoto"
+                    className="hidden"
+                    disabled={isUploading}
+                    onChange={(event) => handleImage(event)}
+                  />
+
+                  {profilePhoto ? (
+                    <div className="flex items-center gap-x-4">
+                      <Button
+                        onClick={() => startUpload(profilePhoto)}
+                        disabled={isUploading}
+                        className={cn(
+                          "bg-colored-primary text-base text-white font-semibold",
+                          { "opacity-70": isUploading }
+                        )}
+                      >
+                        {isUploading ? (
+                          <>
+                            <span className="mr-2">Mudando Foto</span>
+                            <Loader2 className="animate-spin" />
+                          </>
+                        ) : (
+                          "Mudar Foto"
+                        )}
+                      </Button>
+
+                      <Button disabled={isUploading} variant="destructive">
+                        <Trash2 color="#FFFFFF" />
+                      </Button>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-col gap-y-2 items-center">
@@ -57,7 +176,10 @@ export const ProfileModal = () => {
             </div>
 
             <div className="w-full flex justify-center">
-              <Button className="w-2/4 bg-white space-x-2 rounded-[30px] hover:bg-white hover:shadow-lg hover:shadow-[#b64862] transition-shadow">
+              <Button
+                disabled={isUploading}
+                className="w-2/4 bg-white space-x-2 rounded-[30px] hover:bg-white hover:shadow-lg hover:shadow-[#b64862] transition-shadow"
+              >
                 <LogOut color="#F85C7F" />
                 <span className="text-gradient">Sair</span>
               </Button>

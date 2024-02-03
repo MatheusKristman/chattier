@@ -302,6 +302,7 @@ export const RegisterForm = () => {
               )}
             />
 
+            {/* TODO: arrumar hover do botão */}
             <Button
               type="submit"
               className="w-full py-2 bg-white rounded-[30px]"
