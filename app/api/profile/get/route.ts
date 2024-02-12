@@ -15,6 +15,9 @@ export async function GET() {
       where: {
         email: session.user?.email,
       },
+      include: {
+        conversations: true,
+      },
     });
 
     if (!user) {
@@ -25,6 +28,7 @@ export async function GET() {
       name: user.name,
       nickname: user.nickname,
       image: user.image,
+      conversations: user.conversations,
     });
   } catch (error) {
     console.log("[ERROR_GET_PROFILE]", error);

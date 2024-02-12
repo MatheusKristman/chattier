@@ -9,8 +9,14 @@ import useContactStore from "@/stores/use-contact-store";
 import { ProfileBox } from "./profile-box";
 import { NewConversationButton } from "./new-conversation-button";
 import { cn } from "@/lib/utils";
+import { Conversation } from "@prisma/client";
 
-export const Contacts = ({ conversationId }: { conversationId?: string }) => {
+interface ContactsProps {
+  conversations: Conversation[];
+  conversationId?: string;
+}
+
+export const Contacts = ({ conversations, conversationId }: ContactsProps) => {
   return (
     <div
       className={cn(
@@ -41,9 +47,15 @@ export const Contacts = ({ conversationId }: { conversationId?: string }) => {
       </div>
 
       <div className="w-full flex flex-col">
-        <ConversationBox />
-        <ConversationBox />
-        <ConversationBox />
+        {conversations.length > 0 ? (
+          conversations.map((conversation) => <ConversationBox />)
+        ) : (
+          <div className="mx-6 p-3 flex items-center justify-center border-2 border-dashed border-[#0c1014] rounded-lg">
+            <span className="text-xl font-semibold text-white/70">
+              Nenhuma Conversa
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
