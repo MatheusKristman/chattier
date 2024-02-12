@@ -36,8 +36,6 @@ export async function POST(req: Request) {
 
     const newUser = await prisma.user.create({
       data: {
-        firstName,
-        lastName,
         nickname: nickname
           ? nickname
           : `@${firstName.toLowerCase()}${lastName.toLowerCase()}`,

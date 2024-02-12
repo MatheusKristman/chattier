@@ -54,6 +54,10 @@ export const authOptions: AuthOptions = {
         token.picture = session.image;
       }
 
+      if (trigger === "update" && session?.name) {
+        token.name = session.name;
+      }
+
       return token;
     },
   },

@@ -9,12 +9,14 @@ import TailwindColor from "@videsk/tailwind-random-color";
 
 import { cn } from "@/lib/utils";
 import useContactStore from "@/stores/use-contact-store";
+import useUserStore from "@/stores/use-user-store";
 
 // TODO arrumar responsividade da box quando for uma tela muito pequena
 
 export const ProfileBox = () => {
   const { data: session } = useSession();
   const { openProfileModal } = useContactStore();
+  const { name, nickname, image } = useUserStore();
 
   const [defaultUserColor, setDefaultUserColor] = useState("");
 
@@ -50,9 +52,9 @@ export const ProfileBox = () => {
             { defaultUserColor: !session?.user?.image }
           )}
         >
-          {session?.user?.image ? (
+          {image ? (
             <Image
-              src={session.user.image}
+              src={image}
               alt="Foto de perfil"
               fill
               className="object-cover object-center"
@@ -63,9 +65,9 @@ export const ProfileBox = () => {
         </div>
 
         <div className="flex flex-col gap-y-1">
-          <h3 className="text-white text-xl font-semibold">John Doe</h3>
+          <h3 className="text-white text-xl font-semibold">{name}</h3>
 
-          <span className="text-white text-base font-medium">@johndoe</span>
+          <span className="text-white text-base font-medium">@{nickname}</span>
         </div>
       </div>
 

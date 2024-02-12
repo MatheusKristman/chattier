@@ -1,26 +1,29 @@
 "use client";
 
-import { Loader2, LogOut, Plus, Trash2, X } from "lucide-react";
+import { Loader2, LogOut, Pencil, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { useUploadThing, uploadFiles } from "@/lib/uploadthing";
+import { signOut, useSession } from "next-auth/react";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { BlockedProfileBox } from "./blocked-profile-box";
 import useContactStore from "@/stores/use-contact-store";
-import { UploadButton } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { useSession } from "next-auth/react";
+import { useUploadThing } from "@/lib/uploadthing";
+import useUserStore from "@/stores/use-user-store";
 
 export const ProfileModal = () => {
   const { data: session, update } = useSession();
   const { isProfileModalOpen, closeProfileModal } = useContactStore();
+  const { name, setName, nickname, setNickname, image, setImage } =
+    useUserStore();
   const { startUpload, isUploading } = useUploadThing("profilePhotoUploader", {
     onClientUploadComplete: async (res) => {
       toast.success("Foto de perfil atualizada com sucesso");
 
-      setProfilePhotoURL(res[0].url);
+      setImage(res[0].url);
       setProfilePhoto(null);
 
       await update({ image: res[0].url });
@@ -40,7 +43,15 @@ export const ProfileModal = () => {
 
   const [isSendingImage, setIsSendingImage] = useState<boolean>(false);
   const [profilePhoto, setProfilePhoto] = useState<File[] | null>(null);
-  const [profilePhotoURL, setProfilePhotoURL] = useState<string>("");
+  const [isNameEditing, setIsNameEditing] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>("");
+  const [isNicknameEditing, setIsNicknameEditing] = useState<boolean>(false);
+  const [newNickname, setNewNickname] = useState<string>("");
+
+  useEffect(() => {
+    setNewNickname(nickname);
+    setNewName(name);
+  }, [nickname, name]);
 
   function handleImage(event: React.ChangeEvent<HTMLInputElement>) {
     setIsSendingImage(true);
@@ -56,7 +67,7 @@ export const ProfileModal = () => {
     }
 
     if (file && file.type.startsWith("image/")) {
-      setProfilePhotoURL(URL.createObjectURL(file));
+      setImage(URL.createObjectURL(file));
       setProfilePhoto([file]);
       setIsSendingImage(false);
       return;
@@ -72,8 +83,56 @@ export const ProfileModal = () => {
       fileInput.current.value = "";
     }
 
-    setProfilePhotoURL("");
+    setImage("");
     setProfilePhoto(null);
+  }
+
+  function handleNameEditing() {
+    setIsNameEditing(true);
+  }
+
+  function handleNameUpdate() {
+    if (newName && newName !== name) {
+      axios
+        .put("/api/profile/update/name", {
+          name: newName,
+          email: session?.user?.email,
+        })
+        .then(async (res) => {
+          setName(res.data);
+
+          setIsNameEditing(false);
+        })
+        .catch((error) => {
+          toast.error(error.response.data);
+
+          console.error(error);
+        });
+    } else {
+      setIsNameEditing(false);
+    }
+  }
+
+  function handleNicknameEditing() {
+    setIsNicknameEditing(true);
+  }
+
+  function handleNicknameUpdate() {
+    if (newNickname && newNickname !== nickname) {
+      axios
+        .put("/api/profile/update/nickname", {
+          nickname: newNickname,
+          email: session?.user?.email,
+        })
+        .then((res) => {
+          setNickname(res.data);
+
+          setIsNicknameEditing(false);
+        })
+        .catch((error) => console.error(error));
+    } else {
+      setIsNicknameEditing(false);
+    }
   }
 
   return (
@@ -98,16 +157,16 @@ export const ProfileModal = () => {
                     htmlFor="profilePhoto"
                     className="relative cursor-pointer w-[140px] min-w-[140px] max-w-[140px] h-[140px] min-h-[140px] max-h-[140px] bg-gray-primary rounded-full overflow-hidden flex items-center justify-center"
                   >
-                    {profilePhoto || profilePhotoURL ? (
+                    {profilePhoto && image ? (
                       <Image
-                        src={profilePhotoURL}
+                        src={image}
                         alt="Foto de perfil"
                         fill
                         className="object-cover object-center"
                       />
-                    ) : session?.user?.image ? (
+                    ) : image ? (
                       <Image
-                        src={session.user.image}
+                        src={image}
                         alt="Foto de perfil"
                         fill
                         className="object-cover object-center"
@@ -159,14 +218,67 @@ export const ProfileModal = () => {
                 </div>
 
                 <div className="flex flex-col gap-y-2 items-center">
-                  <div className="px-2 py-1 bg-gray-primary flex items-center justify-center rounded-lg">
-                    <h4 className="text-2xl text-white font-semibold text-center">
-                      John Doe
-                    </h4>
+                  <div
+                    role="button"
+                    onClick={handleNameEditing}
+                    className="relative px-2 py-1 bg-gray-primary flex items-center justify-center rounded-lg cursor-pointer group"
+                  >
+                    {isNameEditing ? (
+                      <input
+                        type="text"
+                        autoComplete="on"
+                        autoCorrect="on"
+                        value={newName}
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>
+                        ) => setNewName(event.target.value)}
+                        onBlur={() => handleNameUpdate()}
+                        autoFocus
+                        className="w-40 flex bg-transparent text-2xl text-white font-semibold text-center focus-visible:outline-none"
+                      />
+                    ) : (
+                      <>
+                        <h4 className="text-2xl text-white font-semibold text-center">
+                          {name}
+                        </h4>
+                        <Pencil
+                          color="#0c1014"
+                          className="absolute -top-1 -right-1 bg-white rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100"
+                        />
+                      </>
+                    )}
                   </div>
 
-                  <span className="text-base text-white font-semibold">
-                    @johndoe
+                  <span
+                    role="button"
+                    onClick={handleNicknameEditing}
+                    className={cn(
+                      "relative px-2 py-1 rounded text-base text-white font-semibold transition-opacity cursor-pointer hover:bg-gray-primary/80 group",
+                      { "bg-gray-primary/80": isNicknameEditing }
+                    )}
+                  >
+                    {isNicknameEditing ? (
+                      <input
+                        type="text"
+                        autoComplete="on"
+                        autoCorrect="on"
+                        value={newNickname}
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>
+                        ) => setNewNickname(event.target.value)}
+                        onBlur={() => handleNicknameUpdate()}
+                        autoFocus
+                        className="w-28 flex bg-transparent text-base text-white font-semibold text-center focus-visible:outline-none"
+                      />
+                    ) : (
+                      <>
+                        @{nickname}
+                        <Pencil
+                          color="#0c1014"
+                          className="absolute -top-1 -right-1 bg-white rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100"
+                        />
+                      </>
+                    )}
                   </span>
                 </div>
               </div>
@@ -187,6 +299,7 @@ export const ProfileModal = () => {
 
             <div className="w-full flex justify-center">
               <Button
+                onClick={() => signOut()}
                 disabled={isUploading || isSendingImage}
                 className="w-2/4 bg-white space-x-2 rounded-[30px] hover:bg-white hover:shadow-lg hover:shadow-[#b64862] transition-shadow"
               >
