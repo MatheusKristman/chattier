@@ -39,6 +39,9 @@ export default withUt({
         "trash-icon": "url('/images/trash.svg')",
       },
       colors: {
+        "gray-primary": "#0C1014",
+        "gray-secondary": "#131920",
+        "red-error": "#FB5151",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -72,7 +75,6 @@ export default withUt({
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "red-error": "#FB5151",
       },
       borderRadius: {
         lg: "var(--radius)",

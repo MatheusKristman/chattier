@@ -34,7 +34,7 @@ export async function GET() {
     console.log("[ERROR_GET_PROFILE]", error);
     return new NextResponse(
       "Ocorreu um erro na solicitação dos dados do usuário",
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

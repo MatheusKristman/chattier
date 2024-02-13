@@ -1,11 +1,8 @@
-import { Dot } from "lucide-react";
 import Image from "next/image";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ConversationBox } from "./conversation-box";
 import Link from "next/link";
-import useContactStore from "@/stores/use-contact-store";
 import { ProfileBox } from "./profile-box";
 import { NewConversationButton } from "./new-conversation-button";
 import { cn } from "@/lib/utils";
@@ -21,7 +18,7 @@ export const Contacts = ({ conversations, conversationId }: ContactsProps) => {
     <div
       className={cn(
         "w-full min-h-screen bg-gray-secondary flex-col gap-y-12 lg:w-[450px]",
-        conversationId ? "hidden lg:flex" : "flex"
+        conversationId ? "hidden lg:flex" : "flex",
       )}
     >
       <Link href="/" className="w-full flex justify-center items-center mt-6">
@@ -48,7 +45,12 @@ export const Contacts = ({ conversations, conversationId }: ContactsProps) => {
 
       <div className="w-full flex flex-col">
         {conversations.length > 0 ? (
-          conversations.map((conversation) => <ConversationBox />)
+          conversations.map((conversation) => (
+            <ConversationBox
+              key={conversation.id}
+              conversationId={conversation.id}
+            />
+          ))
         ) : (
           <div className="mx-6 p-3 flex items-center justify-center border-2 border-dashed border-[#0c1014] rounded-lg">
             <span className="text-xl font-semibold text-white/70">

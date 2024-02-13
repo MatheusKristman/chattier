@@ -1,15 +1,67 @@
 "use client";
 
 import { X } from "lucide-react";
+import { User } from "@prisma/client";
+import { useState, useEffect, ChangeEvent } from "react";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { NewContactBox } from "./new-contact-box";
 import useContactStore from "@/stores/use-contact-store";
 
 export const NewConversationModal = () => {
   const { isNewConversationModalOpen, closeNewConversationModal } =
     useContactStore();
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [searchValue, setSearchValue] = useState<string>("");
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    axios
+      .get("/api/conversation/get-users")
+      .then((res) => {
+        setUsers(res.data);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (searchValue.length > 3 && users.length > 0) {
+      const searchResult = users.filter((user) =>
+        user.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .includes(
+            searchValue
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toLowerCase(),
+          ),
+      );
+
+      setFilteredUsers(searchResult);
+    }
+  }, [searchValue, users]);
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    setSearchValue(event.target.value);
+  }
+
+  function clearSearch() {
+    setSearchValue("");
+  }
 
   return (
     <>
@@ -25,8 +77,10 @@ export const NewConversationModal = () => {
               </Button>
             </div>
 
-            <div className="relative mb-12">
+            <div role="searchbox" className="relative mb-12">
               <Input
+                value={searchValue}
+                onChange={handleSearchChange}
                 placeholder="Pesquise o nome do usuário"
                 className="bg-[#161D26] rounded-lg w-full h-12 placeholder:text-[#26313E] text-base border-none pl-12 text-white"
               />
@@ -35,14 +89,72 @@ export const NewConversationModal = () => {
                 aria-hidden="true"
                 className="bg-search-icon bg-no-repeat bg-contain bg-center w-7 h-7 absolute top-1/2 left-2.5 -translate-y-1/2"
               />
+
+              {searchValue.length > 0 ? (
+                <Button
+                  onClick={clearSearch}
+                  variant="link"
+                  className="px-2 absolute top-1/2 right-2.5 -translate-y-1/2 z-20"
+                >
+                  <X className="text-slate-600" />
+                </Button>
+              ) : null}
             </div>
 
             <div className="w-full flex flex-col gap-y-9">
-              <NewContactBox />
+              {isLoading ? (
+                <>
+                  <NewConversationModalSkeleton />
+                  <NewConversationModalSkeleton />
+                  <NewConversationModalSkeleton />
+                </>
+              ) : filteredUsers.length > 0 && searchValue.length >= 3 ? (
+                filteredUsers.map((user) => (
+                  <NewContactBox
+                    key={user.id}
+                    imageSrc={user.image}
+                    name={user.name}
+                    userId={user.id}
+                  />
+                ))
+              ) : users.length > 0 && searchValue.length < 3 ? (
+                users.map((user) => (
+                  <NewContactBox
+                    key={user.id}
+                    imageSrc={user.image}
+                    name={user.name}
+                    userId={user.id}
+                  />
+                ))
+              ) : (
+                <div className="w-full flex items-center justify-center">
+                  <span className="text-xl font-semibold text-slate-600">
+                    Nenhum contato presente...
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
     </>
+  );
+};
+
+const NewConversationModalSkeleton = () => {
+  return (
+    <div className="w-full flex items-center justify-between">
+      <div className="flex items-center justify-center gap-x-5">
+        <div className="relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center">
+          <Skeleton className="w-full h-full" />
+        </div>
+
+        <div className="flex flex-col gap-y-1">
+          <Skeleton className="w-32 h-6" />
+        </div>
+      </div>
+
+      <Skeleton className="w-36 h-11" />
+    </div>
   );
 };

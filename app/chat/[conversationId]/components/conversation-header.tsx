@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { ChevronLeft, MoreVertical } from "lucide-react";
+import { ChevronLeft, MoreVertical, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 import {
   Popover,
@@ -10,9 +12,90 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { BlockedUser, User } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
-export const ConversationHeader = () => {
+interface ConversationHeaderProps {
+  conversationId: string;
+}
+
+export const ConversationHeader = ({
+  conversationId,
+}: ConversationHeaderProps) => {
   const router = useRouter();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [otherUser, setOtherUser] = useState<User | null>(null);
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
+  const [isUserBlocked, setIsUserBlocked] = useState<boolean>(false);
+  const [defaultUserColor, setDefaultUserColor] = useState("");
+
+  useEffect(() => {
+    function getRandomColor(array: string[]) {
+      const randomIndex = Math.floor(Math.random() * array.length);
+      return array[randomIndex];
+    }
+
+    const colors = [
+      "bg-red-400",
+      "bg-orange-400",
+      "bg-amber-400",
+      "bg-green-400",
+      "bg-teal-400",
+    ];
+    const randomColor = getRandomColor(colors);
+
+    setDefaultUserColor(randomColor);
+  }, [setDefaultUserColor]);
+
+  useEffect(() => {
+    axios
+      .get(`/api/conversation/get-conversation-users/${conversationId}`)
+      .then((res) => {
+        setUser(res.data.user);
+        setOtherUser(res.data.otherUser);
+        setBlockedUsers(res.data.blockedUsers);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (blockedUsers.length > 0 && otherUser) {
+      const hasBlockedUser = blockedUsers.find((blocked) =>
+        blocked.userBlockedId.includes(otherUser?.id)
+      );
+
+      if (hasBlockedUser) {
+        setIsUserBlocked(true);
+      } else {
+        setIsUserBlocked(false);
+      }
+    } else if (blockedUsers.length === 0 && otherUser) {
+      setIsUserBlocked(false);
+    } else {
+      setIsUserBlocked(false);
+    }
+  }, [blockedUsers, otherUser]);
+
+  function handleBlockUser() {
+    axios
+      .put("/api/conversation/block-user", { conversationId })
+      .then((res) => {
+        toast.success(res.data.message);
+        setUser(res.data.user);
+        setOtherUser(res.data.otherUser);
+        setBlockedUsers(res.data.blockedUser);
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {});
+  }
+
+  console.log(blockedUsers);
 
   return (
     <div className="w-full flex items-center justify-between mb-12">
@@ -21,16 +104,31 @@ export const ConversationHeader = () => {
           <ChevronLeft color="#FFF" size="30px" />
         </Button>
 
-        <div className="relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center">
-          <Image
-            src="/images/profile-test.png"
-            alt="Perfil"
-            fill
-            className="object-center object-cover"
-          />
+        <div
+          className={cn(
+            "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
+            `${!otherUser ? defaultUserColor : ""}`
+          )}
+        >
+          {otherUser?.image ? (
+            <Image
+              src={otherUser.image}
+              alt="Perfil"
+              fill
+              className="object-center object-cover"
+            />
+          ) : (
+            <UserRound size="25" />
+          )}
         </div>
 
-        <h4 className="text-xl text-white font-semibold">Carl Doe</h4>
+        <h4 className="text-xl text-white font-semibold">{otherUser?.name}</h4>
+
+        {isUserBlocked ? (
+          <span className="border border-red-500 rounded py-1 px-2 text-red-500 text-base text-medium">
+            Bloqueado
+          </span>
+        ) : null}
       </div>
 
       <Popover>
@@ -43,17 +141,11 @@ export const ConversationHeader = () => {
           className="bg-[#212A35] border-none rounded-xl rounded-tr-none space-y-6"
         >
           <Button
+            onClick={handleBlockUser}
             variant="destructive"
             className="w-full border-2 border-red-500 bg-transparent text-red-500 hover:text-white text-base font-semibold"
           >
             Bloquear usuário
-          </Button>
-
-          <Button
-            variant="destructive"
-            className="w-full text-base font-semibold"
-          >
-            Deletar conversa
           </Button>
         </PopoverContent>
       </Popover>

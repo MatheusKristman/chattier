@@ -24,6 +24,7 @@ export const ProfileModal = () => {
       toast.success("Foto de perfil atualizada com sucesso");
 
       setImage(res[0].url);
+      setProfilePhotoUrl("");
       setProfilePhoto(null);
 
       await update({ image: res[0].url });
@@ -34,7 +35,7 @@ export const ProfileModal = () => {
     },
     onUploadError: () => {
       toast.error(
-        "Ocorreu um erro durante o envio da foto de perfil, tente novamente mais tarde"
+        "Ocorreu um erro durante o envio da foto de perfil, tente novamente mais tarde",
       );
     },
   });
@@ -42,6 +43,7 @@ export const ProfileModal = () => {
   const fileInput = useRef<HTMLInputElement | null>(null);
 
   const [isSendingImage, setIsSendingImage] = useState<boolean>(false);
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>("");
   const [profilePhoto, setProfilePhoto] = useState<File[] | null>(null);
   const [isNameEditing, setIsNameEditing] = useState<boolean>(false);
   const [newName, setNewName] = useState<string>("");
@@ -52,6 +54,14 @@ export const ProfileModal = () => {
     setNewNickname(nickname);
     setNewName(name);
   }, [nickname, name]);
+
+  function handleCloselModal() {
+    closeProfileModal();
+    setIsSendingImage(false);
+    setProfilePhoto(null);
+    setIsNameEditing(false);
+    setIsNicknameEditing(false);
+  }
 
   function handleImage(event: React.ChangeEvent<HTMLInputElement>) {
     setIsSendingImage(true);
@@ -67,7 +77,7 @@ export const ProfileModal = () => {
     }
 
     if (file && file.type.startsWith("image/")) {
-      setImage(URL.createObjectURL(file));
+      setProfilePhotoUrl(URL.createObjectURL(file));
       setProfilePhoto([file]);
       setIsSendingImage(false);
       return;
@@ -83,7 +93,7 @@ export const ProfileModal = () => {
       fileInput.current.value = "";
     }
 
-    setImage("");
+    setProfilePhotoUrl("");
     setProfilePhoto(null);
   }
 
@@ -142,7 +152,7 @@ export const ProfileModal = () => {
           <div className="w-full max-w-[700px] bg-gray-secondary px-9 py-6 rounded-[30px] inline-block align-middle">
             <div className="flex justify-end">
               <Button
-                onClick={closeProfileModal}
+                onClick={handleCloselModal}
                 disabled={isUploading || isSendingImage}
                 className="bg-transparent hover:bg-transparent"
               >
@@ -152,17 +162,17 @@ export const ProfileModal = () => {
 
             <div className="w-full flex justify-center mb-9">
               <div className="flex flex-col items-center gap-y-9">
-                <div className="flex flex-col items-center gap-y-4">
+                <div className="relative flex flex-col items-center gap-y-4 group">
                   <label
                     htmlFor="profilePhoto"
-                    className="relative cursor-pointer w-[140px] min-w-[140px] max-w-[140px] h-[140px] min-h-[140px] max-h-[140px] bg-gray-primary rounded-full overflow-hidden flex items-center justify-center"
+                    className="relative cursor-pointer w-[140px] min-w-[140px] max-w-[140px] h-[140px] min-h-[140px] max-h-[140px] bg-gray-primary rounded-full overflow-hidden flex items-center justify-center "
                   >
-                    {profilePhoto && image ? (
+                    {profilePhoto && profilePhotoUrl ? (
                       <Image
-                        src={image}
+                        src={profilePhotoUrl}
                         alt="Foto de perfil"
                         fill
-                        className="object-cover object-center"
+                        className="object-cover object-center group-hover:w-10 group-hover:h-10"
                       />
                     ) : image ? (
                       <Image
@@ -175,6 +185,13 @@ export const ProfileModal = () => {
                       <Plus size="80px" strokeWidth="0.5" color="#202730" />
                     )}
                   </label>
+
+                  {!profilePhoto ? (
+                    <Pencil
+                      color="#0c1014"
+                      className="absolute -top-1 -right-1 bg-white rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100"
+                    />
+                  ) : null}
 
                   <input
                     ref={fileInput}
@@ -193,7 +210,7 @@ export const ProfileModal = () => {
                         disabled={isUploading || isSendingImage}
                         className={cn(
                           "bg-colored-primary text-base text-white font-semibold",
-                          { "opacity-70": isUploading }
+                          { "opacity-70": isUploading },
                         )}
                       >
                         {isUploading ? (
@@ -230,7 +247,7 @@ export const ProfileModal = () => {
                         autoCorrect="on"
                         value={newName}
                         onChange={(
-                          event: React.ChangeEvent<HTMLInputElement>
+                          event: React.ChangeEvent<HTMLInputElement>,
                         ) => setNewName(event.target.value)}
                         onBlur={() => handleNameUpdate()}
                         autoFocus
@@ -254,7 +271,7 @@ export const ProfileModal = () => {
                     onClick={handleNicknameEditing}
                     className={cn(
                       "relative px-2 py-1 rounded text-base text-white font-semibold transition-opacity cursor-pointer hover:bg-gray-primary/80 group",
-                      { "bg-gray-primary/80": isNicknameEditing }
+                      { "bg-gray-primary/80": isNicknameEditing },
                     )}
                   >
                     {isNicknameEditing ? (
@@ -264,7 +281,7 @@ export const ProfileModal = () => {
                         autoCorrect="on"
                         value={newNickname}
                         onChange={(
-                          event: React.ChangeEvent<HTMLInputElement>
+                          event: React.ChangeEvent<HTMLInputElement>,
                         ) => setNewNickname(event.target.value)}
                         onBlur={() => handleNicknameUpdate()}
                         autoFocus

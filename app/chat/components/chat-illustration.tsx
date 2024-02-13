@@ -10,7 +10,7 @@ import {
 
 export const ChatIllustration = () => {
   return (
-    <div className="hidden lg:flex lg:w-full lg:min-h-screen lg:overflow-auto py-12">
+    <div className="hidden lg:flex lg:w-[calc(100%-450px)] lg:min-h-screen lg:overflow-auto py-12">
       <div className="flex flex-col items-center gap-y-20 my-auto mx-auto">
         <motion.h2
           initial="initial"
@@ -26,7 +26,7 @@ export const ChatIllustration = () => {
           initial="initial"
           animate="animate"
           variants={containerAnimation}
-          className="w-[680px] h-[420px] rounded-[70px] bg-gradient-to-tr from-[#9DFACE] to-[#F85C7F] flex items-center justify-center relative"
+          className="w-[480px] h-[320px] xl:w-[680px] xl:h-[420px] rounded-[70px] bg-gradient-to-tr from-[#9DFACE] to-[#F85C7F] flex items-center justify-center relative"
         >
           <motion.div variants={backIllustrationAnimation}>
             <Image

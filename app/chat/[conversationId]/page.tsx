@@ -33,7 +33,7 @@ const ConversationPage = ({
   return (
     <>
       <Contacts conversations={conversations} conversationId={conversationId} />
-      <Conversation />
+      <Conversation conversationId={conversationId} />
     </>
   );
 };

@@ -54,9 +54,12 @@ model User {
   seenMessageIds String[]  @db.ObjectId
   seenMessages   Message[] @relation("Seen", fields: [seenMessageIds], references: [id])
 
-  Message  Message[]
-  accounts Account[]
-  sessions Session[]
+  usersBlockeds BlockedUser[] @relation("UserBlocked")
+
+  blockedUser BlockedUser[]
+  Message     Message[]
+  accounts    Account[]
+  sessions    Session[]
 }
 
 model VerificationToken {
@@ -94,4 +97,17 @@ model Message {
 
   conversationId String       @db.ObjectId
   conversations  Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model BlockedUser {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  blockedById String @db.ObjectId
+  blockedBy   User   @relation(fields: [blockedById], references: [id])
+
+  userBlockedId String @db.ObjectId
+  userBlocked   User   @relation("UserBlocked", fields: [userBlockedId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
