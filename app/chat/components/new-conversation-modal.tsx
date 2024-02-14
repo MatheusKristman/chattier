@@ -11,30 +11,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NewContactBox } from "./new-contact-box";
 import useContactStore from "@/stores/use-contact-store";
 
-export const NewConversationModal = () => {
+interface NewConversationModalProps {
+  newContacts: User[];
+}
+
+export const NewConversationModal = ({
+  newContacts,
+}: NewConversationModalProps) => {
   const { isNewConversationModalOpen, closeNewConversationModal } =
     useContactStore();
 
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>(newContacts);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchValue, setSearchValue] = useState<string>("");
 
-  useEffect(() => {
-    setIsLoading(true);
-
-    axios
-      .get("/api/conversation/get-users")
-      .then((res) => {
-        setUsers(res.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  console.log(users);
 
   useEffect(() => {
     if (searchValue.length > 3 && users.length > 0) {

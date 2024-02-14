@@ -20,6 +20,9 @@ export async function GET(
       where: {
         email: session.user.email,
       },
+      include: {
+        blockedUser: true,
+      },
     });
 
     if (!user) {
@@ -55,12 +58,16 @@ export async function GET(
     console.log(conversation);
 
     const lastMessage =
-      conversation.messages[conversation.messages.length - 1] || [];
+      conversation.messages[conversation.messages.length - 1] || {};
 
     console.log(lastMessage);
 
     return NextResponse.json(
-      { otherUser: conversation.user[0], lastMessage },
+      {
+        otherUser: conversation.user[0],
+        lastMessage,
+        blockedUsers: user.blockedUser,
+      },
       { status: 200 },
     );
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import { Loader2, LogOut, Pencil, Plus, Trash2, X } from "lucide-react";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
 import { toast } from "react-hot-toast";
 import { signOut, useSession } from "next-auth/react";
 import axios from "axios";
@@ -13,21 +13,34 @@ import useContactStore from "@/stores/use-contact-store";
 import { cn } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadthing";
 import useUserStore from "@/stores/use-user-store";
+import { ProfileBoxType } from "@/types";
 
-export const ProfileModal = () => {
+interface ProfileModalProps {
+  currentUser: ProfileBoxType | null;
+  setCurrentUser: Dispatch<SetStateAction<ProfileBoxType | null>>;
+}
+
+export const ProfileModal = ({
+  currentUser,
+  setCurrentUser,
+}: ProfileModalProps) => {
   const { data: session, update } = useSession();
   const { isProfileModalOpen, closeProfileModal } = useContactStore();
-  const { name, setName, nickname, setNickname, image, setImage } =
-    useUserStore();
   const { startUpload, isUploading } = useUploadThing("profilePhotoUploader", {
     onClientUploadComplete: async (res) => {
       toast.success("Foto de perfil atualizada com sucesso");
 
-      setImage(res[0].url);
+      setCurrentUser((prev) => {
+        if (!prev) {
+          return null;
+        }
+
+        return { ...prev, image: res[0].url };
+      });
       setProfilePhotoUrl("");
       setProfilePhoto(null);
 
-      await update({ image: res[0].url });
+      // await update({ image: res[0].url });
 
       if (fileInput.current) {
         fileInput.current.value = "";
@@ -51,9 +64,11 @@ export const ProfileModal = () => {
   const [newNickname, setNewNickname] = useState<string>("");
 
   useEffect(() => {
-    setNewNickname(nickname);
-    setNewName(name);
-  }, [nickname, name]);
+    if (currentUser?.name && currentUser?.nickname) {
+      setNewNickname(currentUser.nickname);
+      setNewName(currentUser.name);
+    }
+  }, [currentUser?.name, currentUser?.nickname]);
 
   function handleCloselModal() {
     closeProfileModal();
@@ -102,14 +117,20 @@ export const ProfileModal = () => {
   }
 
   function handleNameUpdate() {
-    if (newName && newName !== name) {
+    if (newName && newName !== currentUser?.name) {
       axios
         .put("/api/profile/update/name", {
           name: newName,
           email: session?.user?.email,
         })
         .then(async (res) => {
-          setName(res.data);
+          setCurrentUser((prev) => {
+            if (!prev) {
+              return null;
+            }
+
+            return { ...prev, name: res.data };
+          });
 
           setIsNameEditing(false);
         })
@@ -128,14 +149,20 @@ export const ProfileModal = () => {
   }
 
   function handleNicknameUpdate() {
-    if (newNickname && newNickname !== nickname) {
+    if (newNickname && newNickname !== currentUser?.nickname) {
       axios
         .put("/api/profile/update/nickname", {
           nickname: newNickname,
           email: session?.user?.email,
         })
         .then((res) => {
-          setNickname(res.data);
+          setCurrentUser((prev) => {
+            if (!prev) {
+              return null;
+            }
+
+            return { ...prev, nickname: res.data };
+          });
 
           setIsNicknameEditing(false);
         })
@@ -174,9 +201,9 @@ export const ProfileModal = () => {
                         fill
                         className="object-cover object-center group-hover:w-10 group-hover:h-10"
                       />
-                    ) : image ? (
+                    ) : currentUser?.image ? (
                       <Image
-                        src={image}
+                        src={currentUser.image}
                         alt="Foto de perfil"
                         fill
                         className="object-cover object-center"
@@ -256,7 +283,7 @@ export const ProfileModal = () => {
                     ) : (
                       <>
                         <h4 className="text-2xl text-white font-semibold text-center">
-                          {name}
+                          {currentUser?.name}
                         </h4>
                         <Pencil
                           color="#0c1014"
@@ -289,7 +316,7 @@ export const ProfileModal = () => {
                       />
                     ) : (
                       <>
-                        @{nickname}
+                        @{currentUser?.nickname}
                         <Pencil
                           color="#0c1014"
                           className="absolute -top-1 -right-1 bg-white rounded-full p-1 transition-opacity opacity-0 group-hover:opacity-100"

@@ -2,91 +2,87 @@
 
 import { UserRound } from "lucide-react";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 import { cn } from "@/lib/utils";
 import useContactStore from "@/stores/use-contact-store";
-import useUserStore from "@/stores/use-user-store";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// TODO arrumar responsividade da box quando for uma tela muito pequena
+import useDefaultUserColor from "@/hooks/useDefaultUserColor";
+import { ProfileBoxType } from "@/types";
+import { ProfileModal } from "./profile-modal";
 
 export const ProfileBox = () => {
-  const { data: session } = useSession();
   const { openProfileModal } = useContactStore();
-  const { name, nickname, image } = useUserStore();
+  const randomColor = useDefaultUserColor();
 
-  const [defaultUserColor, setDefaultUserColor] = useState("");
+  const [currentUser, setCurrentUser] = useState<ProfileBoxType | null>(null);
+  const [isProfileLoading, setIsProfileLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    function getRandomColor(array: string[]) {
-      const randomIndex = Math.floor(Math.random() * array.length);
-      return array[randomIndex];
-    }
+    setIsProfileLoading(true);
 
-    const colors = [
-      "bg-red-400",
-      "bg-orange-400",
-      "bg-amber-400",
-      "bg-green-400",
-      "bg-teal-400",
-    ];
-    const randomColor = getRandomColor(colors);
+    axios
+      .get("/api/profile/get")
+      .then((res) => setCurrentUser(res.data))
+      .catch((error) => console.error(error))
+      .finally(() => setIsProfileLoading(false));
+  }, [setCurrentUser]);
 
-    setDefaultUserColor(randomColor);
-  }, [setDefaultUserColor]);
-
-  if (!name || !nickname) {
+  if (isProfileLoading) {
     return <SkeletonProfileBox />;
   }
 
   return (
-    <div
-      onClick={openProfileModal}
-      role="button"
-      className="p-5 flex items-center justify-between gap-x-6 rounded-xl bg-gray-primary mx-6 sm:mx-auto sm:w-full sm:max-w-sm lg:max-w-none lg:w-auto lg:mx-6"
-    >
-      <div className="flex items-center justify-center gap-x-5">
-        {/* TODO quando o usuário não tem foto */}
-        <div
-          className={cn(
-            "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
-            { defaultUserColor: !session?.user?.image },
-          )}
-        >
-          {image ? (
-            <Image
-              src={image}
-              alt="Foto de perfil"
-              fill
-              className="object-cover object-center"
-            />
-          ) : (
-            <UserRound size="25" />
-          )}
+    <>
+      <ProfileModal currentUser={currentUser} setCurrentUser={setCurrentUser} />
+      <div
+        onClick={openProfileModal}
+        role="button"
+        className="p-5 flex items-center justify-between gap-x-6 rounded-xl bg-gray-primary mx-6 sm:mx-auto sm:w-full sm:max-w-sm lg:max-w-none lg:w-auto lg:mx-6"
+      >
+        <div className="flex items-center justify-center gap-x-5">
+          <div
+            className={cn(
+              "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
+              !currentUser?.image ? randomColor : "",
+            )}
+          >
+            {currentUser?.image ? (
+              <Image
+                src={currentUser.image}
+                alt="Foto de perfil"
+                fill
+                className="object-cover object-center"
+              />
+            ) : (
+              <UserRound size="25" />
+            )}
+          </div>
+
+          <div className="flex flex-col gap-y-1">
+            <h3 className="text-white text-xl font-semibold line-clamp-2">
+              {currentUser?.name}
+            </h3>
+
+            <span className="text-white text-base font-medium">
+              @{currentUser?.nickname}
+            </span>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-y-1">
-          <h3 className="text-white text-xl font-semibold line-clamp-2">
-            {name}
-          </h3>
-
-          <span className="text-white text-base font-medium">@{nickname}</span>
+        <div className="bg-[#212A35] rounded-lg flex items-center justify-center w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px]">
+          {/* TODO: status do perfil */}
+          <Image
+            src="/images/online-icon.svg"
+            alt="Online"
+            width={25}
+            height={25}
+            className="object-contain object-center"
+          />
         </div>
       </div>
-
-      <div className="bg-[#212A35] rounded-lg flex items-center justify-center w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px]">
-        {/* TODO: status do perfil */}
-        <Image
-          src="/images/online-icon.svg"
-          alt="Online"
-          width={25}
-          height={25}
-          className="object-contain object-center"
-        />
-      </div>
-    </div>
+    </>
   );
 };
 

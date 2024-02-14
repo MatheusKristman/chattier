@@ -5,7 +5,7 @@ import prisma from "@/lib/db";
 
 export async function GET(
   req: Request,
-  { params }: { params: { conversationId: string } }
+  { params }: { params: { conversationId: string } },
 ) {
   try {
     const conversationId = params.conversationId;
@@ -25,7 +25,6 @@ export async function GET(
             image: true,
             name: true,
             id: true,
-            blockedUser: true,
             email: true,
           },
         },
@@ -37,24 +36,21 @@ export async function GET(
     }
 
     const otherUser = conversation.user.filter(
-      (user) => user.email !== session.user?.email
+      (user) => user.email !== session.user?.email,
     )[0];
     const user = conversation.user.filter(
-      (user) => user.email === session.user?.email
+      (user) => user.email === session.user?.email,
     )[0];
 
     console.log("user", user);
 
-    return NextResponse.json(
-      { user, otherUser, blockedUsers: user.blockedUser },
-      { status: 200 }
-    );
+    return NextResponse.json({ user, otherUser }, { status: 200 });
   } catch (error) {
     console.log("[ERROR_GET_CONVERSATION_USERS]", error);
 
     return new NextResponse(
       "Ocorreu um error na requisição dos usuários da conversa",
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

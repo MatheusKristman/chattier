@@ -1,19 +1,19 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/db";
+import getCurrentUser from "@/actions/getCurrentUser";
 
 export async function GET() {
   try {
-    const session = await getServerSession();
+    const currentUser = await getCurrentUser();
 
-    if (!session || !session.user?.email) {
+    if (!currentUser?.id) {
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
       where: {
-        email: session.user?.email,
+        email: currentUser.email,
       },
       include: {
         conversations: true,
@@ -28,7 +28,6 @@ export async function GET() {
       name: user.name,
       nickname: user.nickname,
       image: user.image,
-      conversations: user.conversations,
     });
   } catch (error) {
     console.log("[ERROR_GET_PROFILE]", error);

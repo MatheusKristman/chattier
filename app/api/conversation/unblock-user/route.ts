@@ -11,7 +11,7 @@ export async function PUT(req: Request) {
     const session = await getServerSession();
 
     if (!conversationId) {
-      return new NextResponse("Dados invalidos", { status: 400 });
+      return new NextResponse("Dados inválidos", { status: 400 });
     }
 
     if (!session || !session.user?.email) {
@@ -21,6 +21,9 @@ export async function PUT(req: Request) {
     const user = await prisma.user.findUnique({
       where: {
         email: session.user.email,
+      },
+      include: {
+        blockedUser: true,
       },
     });
 
@@ -47,10 +50,13 @@ export async function PUT(req: Request) {
       return new NextResponse("Conversa não encontrada", { status: 404 });
     }
 
-    const blockedUser = await prisma.blockedUser.create({
-      data: {
-        blockedById: user.id,
-        userBlockedId: conversation.user[0].id,
+    const userWhoGotBlocked = user.blockedUser.filter(
+      (block) => block.userBlockedId === conversation.user[0].id,
+    )[0];
+
+    await prisma.blockedUser.delete({
+      where: {
+        id: userWhoGotBlocked.id,
       },
       include: {
         blockedBy: true,
@@ -58,20 +64,31 @@ export async function PUT(req: Request) {
       },
     });
 
-    return NextResponse.json(
-      {
-        message: "Usuário Bloqueado com Sucesso",
-        user: blockedUser.blockedBy,
-        otherUser: blockedUser.userBlocked,
-        blockedUser: [blockedUser],
+    const updatedUser = await prisma.user.findUnique({
+      where: {
+        email: session.user.email,
       },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.log("[ERROR_BLOCK_USER]", error);
-
-    return new NextResponse("Ocorreu um erro durante o bloqueio do perfil", {
-      status: 500,
+      include: {
+        blockedUser: true,
+      },
     });
+
+    if (!updatedUser) {
+      return new NextResponse("Usuário Não atualizado", { status: 404 });
+    }
+
+    return NextResponse.json({
+      message: "Usuário Desbloqueado com Sucesso",
+      user: updatedUser,
+      otherUser: conversation.user[0],
+      blockedUser: updatedUser.blockedUser,
+    });
+  } catch (error) {
+    console.log("[ERROR_UNBLOCK_USER]", error);
+
+    return new NextResponse(
+      "Ocorreu um erro durante o processo de desbloqueio do perfil",
+      { status: 500 },
+    );
   }
 }

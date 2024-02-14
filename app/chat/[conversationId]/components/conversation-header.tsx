@@ -12,22 +12,25 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { BlockedUser, User } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
 interface ConversationHeaderProps {
   conversationId: string;
+  blockedUsers: BlockedUser[];
+  setBlockedUsers: Dispatch<SetStateAction<BlockedUser[]>>;
 }
 
 export const ConversationHeader = ({
   conversationId,
+  blockedUsers,
+  setBlockedUsers,
 }: ConversationHeaderProps) => {
   const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
   const [otherUser, setOtherUser] = useState<User | null>(null);
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [isUserBlocked, setIsUserBlocked] = useState<boolean>(false);
   const [defaultUserColor, setDefaultUserColor] = useState("");
 
@@ -55,7 +58,6 @@ export const ConversationHeader = ({
       .then((res) => {
         setUser(res.data.user);
         setOtherUser(res.data.otherUser);
-        setBlockedUsers(res.data.blockedUsers);
       })
       .catch((error) => {
         console.log(error);
@@ -65,7 +67,7 @@ export const ConversationHeader = ({
   useEffect(() => {
     if (blockedUsers.length > 0 && otherUser) {
       const hasBlockedUser = blockedUsers.find((blocked) =>
-        blocked.userBlockedId.includes(otherUser?.id)
+        blocked.userBlockedId.includes(otherUser?.id),
       );
 
       if (hasBlockedUser) {
@@ -95,6 +97,18 @@ export const ConversationHeader = ({
       .finally(() => {});
   }
 
+  function handleUnblockUser() {
+    axios
+      .put("/api/conversation/unblock-user", { conversationId })
+      .then((res) => {
+        console.log(res.data);
+        toast.success(res.data.message);
+        setUser(res.data.user);
+        setOtherUser(res.data.otherUser);
+        setBlockedUsers(res.data.blockedUser);
+      });
+  }
+
   console.log(blockedUsers);
 
   return (
@@ -107,7 +121,7 @@ export const ConversationHeader = ({
         <div
           className={cn(
             "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
-            `${!otherUser ? defaultUserColor : ""}`
+            `${!otherUser ? defaultUserColor : ""}`,
           )}
         >
           {otherUser?.image ? (
@@ -140,13 +154,22 @@ export const ConversationHeader = ({
           align="end"
           className="bg-[#212A35] border-none rounded-xl rounded-tr-none space-y-6"
         >
-          <Button
-            onClick={handleBlockUser}
-            variant="destructive"
-            className="w-full border-2 border-red-500 bg-transparent text-red-500 hover:text-white text-base font-semibold"
-          >
-            Bloquear usuário
-          </Button>
+          {isUserBlocked ? (
+            <Button
+              onClick={handleUnblockUser}
+              className="w-full border-2 border-green-500 bg-transparent text-green-500 hover:text-white hover:bg-green-500 text-base font-semibold"
+            >
+              Desbloquear usuário
+            </Button>
+          ) : (
+            <Button
+              onClick={handleBlockUser}
+              variant="destructive"
+              className="w-full border-2 border-red-500 bg-transparent text-red-500 hover:text-white text-base font-semibold"
+            >
+              Bloquear usuário
+            </Button>
+          )}
         </PopoverContent>
       </Popover>
     </div>
