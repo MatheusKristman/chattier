@@ -8,19 +8,21 @@ import { NewConversationButton } from "./new-conversation-button";
 import { cn } from "@/lib/utils";
 import { FullConversationType } from "@/types";
 import useConversation from "@/hooks/useConversation";
-import { User } from "@prisma/client";
+import { BlockedUser, User } from "@prisma/client";
 import { NewConversationModal } from "./new-conversation-modal";
 
 interface ContactsProps {
   initialConversations: FullConversationType[];
   newContacts: User[];
   conversationParams?: { conversationId: string };
+  blockedUsers: BlockedUser[];
 }
 
-export const Contacts = ({
+export const Contacts = async ({
   initialConversations,
   newContacts,
   conversationParams,
+  blockedUsers,
 }: ContactsProps) => {
   const { isOpen, conversationId } = useConversation(conversationParams);
 
@@ -30,7 +32,7 @@ export const Contacts = ({
       <div
         className={cn(
           "w-full min-h-screen bg-gray-secondary flex-col gap-y-12 lg:w-[450px]",
-          isOpen ? "hidden lg:flex" : "flex",
+          isOpen ? "hidden lg:flex" : "flex"
         )}
       >
         <Link href="/" className="w-full flex justify-center items-center mt-6">
@@ -62,6 +64,7 @@ export const Contacts = ({
                 key={conversation.id}
                 conversation={conversation}
                 selected={conversationId === conversation.id}
+                blockedUsers={blockedUsers}
               />
             ))
           ) : (

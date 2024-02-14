@@ -1,4 +1,9 @@
-import { BlockedUser } from "@prisma/client";
+import {
+  BlockedUser,
+  Conversation as ConversationType,
+  Message,
+  User,
+} from "@prisma/client";
 import { ConversationHeader } from "./conversation-header";
 import { MessageForm } from "./message-form";
 import { MessagesBox } from "./messages-box";
@@ -6,22 +11,23 @@ import { SendImageModal } from "./send-image-modal";
 import { Dispatch, SetStateAction } from "react";
 
 interface ConversationProps {
-  conversationId: string;
-  blockedUsers: BlockedUser[];
-  setBlockedUsers: Dispatch<SetStateAction<BlockedUser[]>>;
+  conversation: ConversationType & {
+    user: User[];
+  };
+  initialMessages: Message[];
+  isOtherUserBlocked: boolean;
 }
 
 export const Conversation = ({
-  conversationId,
-  blockedUsers,
-  setBlockedUsers,
+  conversation,
+  initialMessages,
+  isOtherUserBlocked,
 }: ConversationProps) => {
   return (
     <div className="w-full h-screen px-6 py-9 flex flex-col sm:px-16 lg:w-[calc(100%-450px)]">
       <ConversationHeader
-        conversationId={conversationId}
-        blockedUsers={blockedUsers}
-        setBlockedUsers={setBlockedUsers}
+        conversation={conversation}
+        isOtherUserBlocked={isOtherUserBlocked}
       />
       <MessagesBox />
       <MessageForm />
