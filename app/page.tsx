@@ -8,16 +8,16 @@ import { CTA } from "./components/cta";
 import { Footer } from "./components/footer";
 
 export default function Home() {
-    return (
-        <>
-            <Header />
-            <MobileHeaderMenu />
-            <Hero />
-            <Brands />
-            <About />
-            <Benefit />
-            <CTA />
-            <Footer />
-        </>
-    );
+  return (
+    <>
+      <Header />
+      <MobileHeaderMenu />
+      <Hero />
+      <Brands />
+      <About />
+      <Benefit />
+      <CTA />
+      <Footer />
+    </>
+  );
 }

@@ -9,10 +9,15 @@ import { cn } from "@/lib/utils";
 import useContactStore from "@/stores/use-contact-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import useDefaultUserColor from "@/hooks/useDefaultUserColor";
-import { ProfileBoxType } from "@/types";
+import { BlockedUserWithProfileBlocked, ProfileBoxType } from "@/types";
 import { ProfileModal } from "./profile-modal";
+import { BlockedUser } from "@prisma/client";
 
-export const ProfileBox = () => {
+interface ProfileBoxProps {
+  blockedUsers: BlockedUserWithProfileBlocked[];
+}
+
+export const ProfileBox = ({ blockedUsers }: ProfileBoxProps) => {
   const { openProfileModal } = useContactStore();
   const randomColor = useDefaultUserColor();
 
@@ -35,7 +40,11 @@ export const ProfileBox = () => {
 
   return (
     <>
-      <ProfileModal currentUser={currentUser} setCurrentUser={setCurrentUser} />
+      <ProfileModal
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        blockedUsers={blockedUsers}
+      />
       <div
         onClick={openProfileModal}
         role="button"

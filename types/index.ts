@@ -1,4 +1,4 @@
-import { User, Message, Conversation } from "@prisma/client";
+import { User, Message, Conversation, BlockedUser } from "@prisma/client";
 
 export type FullMessageType = Message & {
   sender: User;
@@ -14,4 +14,8 @@ export type ProfileBoxType = {
   name: string;
   nickname: string;
   image: string | null;
+};
+
+export type BlockedUserWithProfileBlocked = BlockedUser & {
+  userBlocked: User;
 };

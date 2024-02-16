@@ -1,30 +1,82 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useState, useEffect, useMemo } from "react";
+import { User } from "@prisma/client";
+import { find } from "lodash";
 
 import { Input } from "@/components/ui/input";
 import { ConversationBox } from "./conversation-box";
 import { ProfileBox } from "./profile-box";
 import { NewConversationButton } from "./new-conversation-button";
 import { cn } from "@/lib/utils";
-import { FullConversationType } from "@/types";
+import { BlockedUserWithProfileBlocked, FullConversationType } from "@/types";
 import useConversation from "@/hooks/useConversation";
-import { BlockedUser, User } from "@prisma/client";
 import { NewConversationModal } from "./new-conversation-modal";
+import { pusherClient } from "@/lib/pusher";
 
 interface ContactsProps {
   initialConversations: FullConversationType[];
   newContacts: User[];
   conversationParams?: { conversationId: string };
-  blockedUsers: BlockedUser[];
+  blockedUsers: BlockedUserWithProfileBlocked[];
 }
 
-export const Contacts = async ({
+export const Contacts = ({
   initialConversations,
   newContacts,
   conversationParams,
   blockedUsers,
 }: ContactsProps) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+
   const { isOpen, conversationId } = useConversation(conversationParams);
+
+  const [conversations, setConversations] = useState(initialConversations);
+
+  const pusherKey = useMemo(() => {
+    return session?.user?.email;
+  }, [session?.user?.email]);
+
+  useEffect(() => {
+    if (!pusherKey) {
+      return;
+    }
+
+    pusherClient.subscribe(pusherKey);
+
+    const newHandler = (conversation: FullConversationType) => {
+      setConversations((current) => {
+        if (find(current, { id: conversation.id })) {
+          return current;
+        }
+
+        return [conversation, ...current];
+      });
+    };
+
+    const updateHandler = (conversation: FullConversationType) => {
+      setConversations((current) =>
+        current.map((currentConversation) => {
+          if (currentConversation.id === conversation.id) {
+            return {
+              ...currentConversation,
+              messages: conversation.messages,
+            };
+          }
+
+          return currentConversation;
+        }),
+      );
+    };
+
+    pusherClient.bind("conversation:new", newHandler);
+    pusherClient.bind("conversation:update", updateHandler);
+  }, [pusherKey, router]);
 
   return (
     <>
@@ -32,14 +84,14 @@ export const Contacts = async ({
       <div
         className={cn(
           "w-full min-h-screen bg-gray-secondary flex-col gap-y-12 lg:w-[450px]",
-          isOpen ? "hidden lg:flex" : "flex"
+          isOpen ? "hidden lg:flex" : "flex",
         )}
       >
         <Link href="/" className="w-full flex justify-center items-center mt-6">
           <Image src="/images/logo.svg" alt="Chattie" width="150" height="41" />
         </Link>
 
-        <ProfileBox />
+        <ProfileBox blockedUsers={blockedUsers} />
 
         <div className="mx-6 flex flex-col gap-y-6 sm:mx-16 lg:mx-6">
           <div className="relative">
@@ -58,8 +110,8 @@ export const Contacts = async ({
         </div>
 
         <div className="w-full flex flex-col">
-          {initialConversations.length > 0 ? (
-            initialConversations.map((conversation) => (
+          {conversations.length > 0 ? (
+            conversations.map((conversation) => (
               <ConversationBox
                 key={conversation.id}
                 conversation={conversation}

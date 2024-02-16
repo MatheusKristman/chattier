@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
 
 export async function POST(req: Request) {
   try {
@@ -50,6 +51,9 @@ export async function POST(req: Request) {
           ],
         },
       },
+      include: {
+        user: true,
+      },
     });
 
     if (!newConversation) {
@@ -57,6 +61,12 @@ export async function POST(req: Request) {
         status: 401,
       });
     }
+
+    newConversation.user.forEach((user) => {
+      if (user.email) {
+        pusherServer.trigger(user.email, "conversation:new", newConversation);
+      }
+    });
 
     return NextResponse.json(newConversation, { status: 200 });
   } catch (error) {

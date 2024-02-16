@@ -58,6 +58,7 @@ const ConversationPage = async ({
         conversation={conversation}
         initialMessages={messages}
         isOtherUserBlocked={isOtherUserBlocked}
+        conversationParams={params}
       />
     </>
   );

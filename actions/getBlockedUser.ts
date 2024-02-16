@@ -4,7 +4,7 @@ import getCurrentUser from "./getCurrentUser";
 import prisma from "@/lib/db";
 
 const getBlockedUser = async (
-  conversation?: FullConversationType | { user: User[] }
+  conversation?: FullConversationType | { user: User[] },
 ) => {
   const currentUser = await getCurrentUser();
 
@@ -18,6 +18,9 @@ const getBlockedUser = async (
     where: {
       blockedById: currentUserId,
     },
+    include: {
+      userBlocked: true,
+    },
   });
 
   if (!blockedUsers) {
@@ -28,14 +31,14 @@ const getBlockedUser = async (
     const currentUserEmail = currentUser.email;
 
     const otherUser = conversation.user.filter(
-      (user) => user.email !== currentUserEmail
+      (user) => user.email !== currentUserEmail,
     )[0];
 
     const blockedUsersArr = blockedUsers;
 
     const isOtherUserBlocked =
       blockedUsersArr.filter(
-        (blockeds) => blockeds.userBlockedId === otherUser.id
+        (blockeds) => blockeds.userBlockedId === otherUser.id,
       ).length > 0;
 
     return { blockedUsers, isOtherUserBlocked };

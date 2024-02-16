@@ -12,19 +12,20 @@ import { BlockedProfileBox } from "./blocked-profile-box";
 import useContactStore from "@/stores/use-contact-store";
 import { cn } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadthing";
-import useUserStore from "@/stores/use-user-store";
-import { ProfileBoxType } from "@/types";
+import { BlockedUserWithProfileBlocked, ProfileBoxType } from "@/types";
 
 interface ProfileModalProps {
   currentUser: ProfileBoxType | null;
   setCurrentUser: Dispatch<SetStateAction<ProfileBoxType | null>>;
+  blockedUsers: BlockedUserWithProfileBlocked[];
 }
 
 export const ProfileModal = ({
   currentUser,
   setCurrentUser,
+  blockedUsers,
 }: ProfileModalProps) => {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const { isProfileModalOpen, closeProfileModal } = useContactStore();
   const { startUpload, isUploading } = useUploadThing("profilePhotoUploader", {
     onClientUploadComplete: async (res) => {
@@ -39,8 +40,6 @@ export const ProfileModal = ({
       });
       setProfilePhotoUrl("");
       setProfilePhoto(null);
-
-      // await update({ image: res[0].url });
 
       if (fileInput.current) {
         fileInput.current.value = "";
@@ -334,10 +333,24 @@ export const ProfileModal = ({
               </h5>
 
               <div className="w-full flex flex-col gap-y-9">
-                <BlockedProfileBox
-                  isUploading={isUploading}
-                  isSendingImage={isSendingImage}
-                />
+                {blockedUsers.length > 0 ? (
+                  blockedUsers.map((user) => (
+                    <BlockedProfileBox
+                      key={user.id}
+                      isUploading={isUploading}
+                      isSendingImage={isSendingImage}
+                      imageSrc={user.userBlocked.image}
+                      name={user.userBlocked.name}
+                      blockedUserId={user.id}
+                    />
+                  ))
+                ) : (
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-xl font-semibold text-slate-600">
+                      Nenhum contato bloqueado
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
