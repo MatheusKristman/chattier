@@ -39,6 +39,31 @@ export const ourFileRouter = {
 
       return {};
     }),
+  imageMessage: f({ image: { maxFileSize: "4MB" } })
+    .middleware(async ({ req }) => {
+      const session = await getServerSession();
+
+      if (!session || !session?.user) {
+        throw new UploadThingError("Não autorizado");
+      }
+
+      const user = await prisma.user.findUnique({
+        where: {
+          email: session.user.email!,
+        },
+      });
+
+      if (!user) {
+        throw new UploadThingError("Usuário não encontrado");
+      }
+
+      return { userId: user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // TODO criar função para criar uma nova mensagem com imagem
+
+      return {};
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

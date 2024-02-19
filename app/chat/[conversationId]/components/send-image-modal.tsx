@@ -1,12 +1,82 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import useConversationStore from "@/stores/use-conversation-store";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Trash2, X } from "lucide-react";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+import { useDropzone } from "@uploadthing/react";
+import { generateClientDropzoneAccept } from "uploadthing/client";
+
+import { useUploadThing } from "@/lib/uploadthing";
+
+import { Button } from "@/components/ui/button";
+import useConversationStore from "@/stores/use-conversation-store";
 
 export const SendImageModal = () => {
   const { isGalleryOpen, closeGallery } = useConversationStore();
+  const imageInput = useRef<HTMLInputElement | null>(null);
+
+  const [isSendingImage, setIsSendingImage] = useState<boolean>(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [image, setImage] = useState<File[] | null>(null);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log("rodei");
+    setImage(acceptedFiles);
+  }, []);
+
+  const { startUpload, permittedFileInfo } = useUploadThing("imageMessage", {
+    onClientUploadComplete: () => {
+      console.log("imagem salva no banco, pronto para mandar para o backend");
+    },
+  });
+
+  const fileTypes = permittedFileInfo?.config
+    ? Object.keys(permittedFileInfo?.config)
+    : [];
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
+  });
+
+  useEffect(() => {
+    console.log(getInputProps);
+  }, [getInputProps]);
+
+  // function handleImage(event: React.ChangeEvent<HTMLInputElement>) {
+  //   setIsSendingImage(true);
+  //
+  //   if (!event.target.files) {
+  //     return;
+  //   }
+  //
+  //   const file = event.target.files[0];
+  //
+  //   if (!file) {
+  //     return;
+  //   }
+  //
+  //   if (file && file.type.startsWith("image/")) {
+  //     setImageUrl(URL.createObjectURL(file));
+  //     setImage([file]);
+  //     setIsSendingImage(false);
+  //     return;
+  //   }
+  //
+  //   toast.error("Formato da image é inválido");
+  //
+  //   setIsSendingImage(false);
+  // }
+
+  function cancelPhotoChange() {
+    if (imageInput.current) {
+      imageInput.current.value = "";
+    }
+
+    setImageUrl("");
+    setImage(null);
+  }
 
   return (
     <>
@@ -23,7 +93,12 @@ export const SendImageModal = () => {
 
             {/* quando não tem uma image selecionada */}
             <div className="absolute top-0 left-0 right-0 bottom-0 w-full h-full p-9">
-              <div className="w-full h-full border-2 border-dashed border-[#131920] rounded-3xl flex flex-col items-center justify-center">
+              <div
+                {...getRootProps}
+                className="w-full h-full border-2 border-dashed border-[#131920] rounded-3xl flex flex-col items-center justify-center"
+              >
+                <input {...getInputProps} />
+
                 <Image
                   src="/images/send-image-bg.svg"
                   alt="Mande sua imagem"
@@ -44,24 +119,24 @@ export const SendImageModal = () => {
             </div>
 
             {/* quando tiver uma image selecionada */}
-            {/* <div className="absolute top-0 left-0 right-0 bottom-0 w-full h-full">
-          <Image
-          src="/images/change-profile-test.jpg"
-            alt="Nova foto de perfil"
-            fill
-            className="object-cover object-center"
-          />
-          
-          <div className="absolute bottom-9 left-0 right-0 w-full flex items-center justify-center gap-x-4">
-            <Button className="w-1/2 rounded-[30px] bg-colored-primary text-xl font-medium">
-            Enviar
-            </Button>
-            
-            <Button className="rounded-[30px] bg-white hover:bg-white/90">
-              <span className="w-6 h-6 bg-trash-icon bg-no-repeat bg-contain bg-center" />
-            </Button>
-          </div>
-        </div> */}
+            {/* <div className="absolute top-0 left-0 right-0 bottom-0 w-full h-full"> */}
+            {/*   <Image */}
+            {/*     src="/images/change-profile-test.jpg" */}
+            {/*     alt="Nova foto de perfil" */}
+            {/*     fill */}
+            {/*     className="object-cover object-center" */}
+            {/*   /> */}
+            {/**/}
+            {/*   <div className="absolute bottom-9 left-0 right-0 w-full flex items-center justify-center gap-x-4"> */}
+            {/*     <Button className="w-1/2 rounded-[30px] bg-colored-primary text-xl font-medium"> */}
+            {/*       Enviar */}
+            {/*     </Button> */}
+            {/**/}
+            {/*     <Button className="rounded-[30px] bg-white hover:bg-white/90"> */}
+            {/*       <span className="w-6 h-6 bg-trash-icon bg-no-repeat bg-contain bg-center" /> */}
+            {/*     </Button> */}
+            {/*   </div> */}
+            {/* </div> */}
           </div>
         </div>
       )}
