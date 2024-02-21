@@ -1,15 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Trash2, X } from "lucide-react";
-import Image from "next/image";
-import { toast } from "react-hot-toast";
 import { useDropzone } from "@uploadthing/react";
-import { generateClientDropzoneAccept } from "uploadthing/client";
 import axios from "axios";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, X } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { generateClientDropzoneAccept } from "uploadthing/client";
 
-import { useUploadThing } from "@/lib/uploadthing";
 import { Button } from "@/components/ui/button";
+import {
+  boxModalAnimation,
+  containerModalAnimation,
+} from "@/constants/framer-animation/modal-animation";
+import { useUploadThing } from "@/lib/uploadthing";
 import useConversationStore from "@/stores/use-conversation-store";
 
 interface SendImageModalProps {
@@ -75,10 +79,19 @@ export const SendImageModal = ({ conversationId }: SendImageModalProps) => {
   }
 
   return (
-    <>
+    <AnimatePresence>
       {isGalleryOpen && (
-        <div className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle">
-          <div className="relative w-full h-[350px] max-w-[700px] bg-[#202730] rounded-[30px] overflow-hidden inline-block align-middle">
+        <motion.div
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={containerModalAnimation}
+          className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle"
+        >
+          <motion.div
+            variants={boxModalAnimation}
+            className="relative w-full h-[350px] max-w-[700px] bg-[#202730] rounded-[30px] overflow-hidden inline-block align-middle"
+          >
             <Button
               disabled={isSendingImage || isUploading}
               onClick={closeGallery}
@@ -154,9 +167,9 @@ export const SendImageModal = ({ conversationId }: SendImageModalProps) => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
