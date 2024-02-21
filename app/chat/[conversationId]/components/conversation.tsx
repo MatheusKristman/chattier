@@ -37,7 +37,7 @@ export const Conversation = ({
         conversationParams={conversationParams}
       />
       <MessageForm conversationParams={conversationParams} />
-      <SendImageModal />
+      <SendImageModal conversationId={conversation.id} />
     </div>
   );
 };

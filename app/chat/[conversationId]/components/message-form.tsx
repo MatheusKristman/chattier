@@ -2,6 +2,7 @@
 
 import { FieldValues, useForm } from "react-hook-form";
 import axios from "axios";
+import { animateScroll as scroll } from "react-scroll";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,16 +31,21 @@ export const MessageForm = ({ conversationParams }: MessageFormProps) => {
 
   function onSubmit(data: FieldValues) {
     setValue("message", "", { shouldValidate: true });
-    axios.post("/api/messages", {
-      ...data,
-      conversationId,
-    });
+
+    axios
+      .post("/api/messages", {
+        ...data,
+        conversationId,
+      })
+      .then(() => {
+        scroll.scrollToBottom();
+      });
   }
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="w-full px-6 py-4 flex items-center justify-between gap-x-6 bg-gray-secondary rounded-2xl"
+      className="w-full px-6 py-4 flex items-center justify-between gap-x-6 bg-gray-secondary rounded-2xl mt-12"
     >
       <Button type="button" size="icon" variant="link" onClick={openGallery}>
         <span className="w-10 h-10 bg-gallery-icon bg-no-repeat bg-contain bg-center" />

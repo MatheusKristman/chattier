@@ -3,6 +3,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
 import prisma from "@/lib/db";
+import getCurrentUser from "@/actions/getCurrentUser";
 
 const f = createUploadthing();
 
@@ -60,9 +61,7 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // TODO criar função para criar uma nova mensagem com imagem
-
-      return {};
+      return { file };
     }),
 } satisfies FileRouter;
 
