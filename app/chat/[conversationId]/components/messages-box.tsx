@@ -78,8 +78,8 @@ export const MessagesBox = ({
   }
 
   return (
-    <ScrollArea>
-      <div className="w-full flex-1 flex flex-col gap-y-6">
+    <ScrollArea className="flex-1">
+      <div className="w-full flex flex-col gap-y-6">
         {messages.map((message, index) => (
           <MessageBox
             key={message.id}
