@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ import {
   infoContainerAnimation,
   infoAnimation,
 } from "@/constants/framer-animation/login-form";
+import { cn } from "@/lib/utils";
 
 const loginFormSchema = z.object({
   email: z
@@ -59,6 +60,8 @@ export const LoginForm = () => {
       ? window.location.origin
       : "";
 
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   useEffect(() => {
     if (session.status === "authenticated") {
       router.replace(`${origin}/chat`);
@@ -66,6 +69,8 @@ export const LoginForm = () => {
   }, [session.status]);
 
   function onSubmit(values: z.infer<typeof loginFormSchema>) {
+    setIsSubmitting(true);
+
     axios
       .post("/api/login", values)
       .then((res) => {
@@ -73,7 +78,7 @@ export const LoginForm = () => {
           .then((callback) => {
             if (callback?.error) {
               toast.error(
-                "Ocorreu um erro no acesso, verifique e tente novamente"
+                "Ocorreu um erro no acesso, verifique e tente novamente",
               );
             }
 
@@ -89,6 +94,9 @@ export const LoginForm = () => {
       .catch((error) => {
         toast.error(error.response.data);
         console.error(error);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   }
 
@@ -135,6 +143,7 @@ export const LoginForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="E-mail*"
                       {...field}
                       className="w-full h-12 mb-4 px-6 rounded-[30px] bg-transparent outline-none transition-colors text-white font-normal text-base border-2 border-[#212A35] focus-visible:border-[#384D66]"
@@ -152,6 +161,7 @@ export const LoginForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       type="password"
                       placeholder="Senha*"
                       {...field}
@@ -164,10 +174,15 @@ export const LoginForm = () => {
             />
 
             <Button
+              disabled={isSubmitting}
               type="submit"
-              className="w-full py-2 bg-white rounded-[30px]"
+              className="w-full py-2 bg-white rounded-[30px] disabled:brightness-75 disabled:cursor-not-allowed"
             >
-              <span className="text-gradient">Entrar</span>
+              {isSubmitting ? (
+                <span className="text-gradient">Entrando</span>
+              ) : (
+                <span className="text-gradient">Entrar</span>
+              )}
             </Button>
           </motion.form>
         </Form>
@@ -179,7 +194,12 @@ export const LoginForm = () => {
       >
         <span className="text-white text-base font-normal text-center">
           Não possui uma conta?{" "}
-          <Link href="/cadastro" className="underline">
+          <Link
+            href="/cadastro"
+            className={cn("underline", {
+              "pointer-events-none": isSubmitting,
+            })}
+          >
             Clique aqui para criar
           </Link>
         </span>

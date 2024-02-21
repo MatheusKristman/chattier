@@ -10,7 +10,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import {
   infoContainerAnimation,
   infoAnimation,
 } from "@/constants/framer-animation/register-form";
+import { cn } from "@/lib/utils";
 
 const registerFormSchema = z
   .object({
@@ -89,11 +90,13 @@ export const RegisterForm = () => {
       ? window.location.origin
       : "";
 
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   useEffect(() => {
     if (session.status === "authenticated") {
       router.replace(`${origin}/chat`);
     }
-  }, [session.status]);
+  }, [session.status, origin, router]);
 
   function onSubmit(values: z.infer<typeof registerFormSchema>) {
     if (!values.isCheckboxConfirmed) {
@@ -102,33 +105,40 @@ export const RegisterForm = () => {
       });
     }
 
+    setIsSubmitting(true);
+
     axios
       .post("/api/register", values)
       .then((res) => {
         if (!res.data.email) {
           toast.error(
-            "Ocorreu um erro no cadastro, verifique e tente novamente"
+            "Ocorreu um erro no cadastro, verifique e tente novamente",
           );
         }
 
         signIn("credentials", {
           ...res.data,
           redirect: false,
-        }).then((callback) => {
-          if (callback?.error) {
-            toast.error(
-              "Ocorreu um erro durante o cadastro, verifique e tente novamente"
-            );
-          }
+        })
+          .then((callback) => {
+            if (callback?.error) {
+              toast.error(
+                "Ocorreu um erro durante o cadastro, verifique e tente novamente",
+              );
+            }
 
-          if (callback?.ok) {
-            router.replace(`${origin}/chat`);
-          }
-        });
+            if (callback?.ok) {
+              router.replace(`${origin}/chat`);
+            }
+          })
+          .finally(() => {
+            setIsSubmitting(false);
+          });
       })
       .catch((error) => {
         toast.error(error.response.data);
         console.error(error);
+        setIsSubmitting(false);
       });
   }
 
@@ -140,7 +150,7 @@ export const RegisterForm = () => {
       className="w-full my-auto flex flex-col items-center pt-6 md:h-full md:justify-center lg:w-1/2"
     >
       <motion.div variants={infoAnimation} className="mb-12">
-        <Link href="/">
+        <Link href="/" className={cn({ "pointer-events-none": isSubmitting })}>
           <Image
             src="/images/logo.svg"
             alt="Chattie"
@@ -175,6 +185,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="Nome*"
                       {...field}
                       className="w-full h-12 mb-4 px-6 rounded-[30px] bg-transparent outline-none transition-colors text-white font-normal text-base border-2 border-[#212A35] focus-visible:border-[#384D66]"
@@ -192,6 +203,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="Sobrenome*"
                       {...field}
                       className="w-full h-12 mb-4 px-6 rounded-[30px] bg-transparent outline-none transition-colors text-white font-normal text-base border-2 border-[#212A35] focus-visible:border-[#384D66]"
@@ -209,6 +221,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="Apelido"
                       {...field}
                       className="w-full h-12 mb-4 px-6 rounded-[30px] bg-transparent outline-none transition-colors text-white font-normal text-base border-2 border-[#212A35] focus-visible:border-[#384D66]"
@@ -226,6 +239,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="E-mail*"
                       {...field}
                       className="w-full h-12 mb-4 px-6 rounded-[30px] bg-transparent outline-none transition-colors text-white font-normal text-base border-2 border-[#212A35] focus-visible:border-[#384D66]"
@@ -243,6 +257,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       type="password"
                       placeholder="Senha*"
                       {...field}
@@ -261,6 +276,7 @@ export const RegisterForm = () => {
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       type="password"
                       placeholder="Confirmar senha*"
                       {...field}
@@ -279,17 +295,28 @@ export const RegisterForm = () => {
                 <FormItem className="w-full mt-4 mb-6">
                   <FormControl>
                     <Checkbox
+                      disabled={isSubmitting}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
                   <FormLabel className="ml-2 text-white text-base font-normal">
                     Ao se cadastrar, você concorda com nossos{" "}
-                    <Link href="/termos-de-servico" className="underline">
+                    <Link
+                      href="/termos-de-servico"
+                      className={cn("underline", {
+                        "pointer-events-none": isSubmitting,
+                      })}
+                    >
                       Termos de Serviço
                     </Link>{" "}
                     e{" "}
-                    <Link href="/politica-de-privacidade" className="underline">
+                    <Link
+                      href="/politica-de-privacidade"
+                      className={cn("underline", {
+                        "pointer-events-none": isSubmitting,
+                      })}
+                    >
                       Política de Privacidade
                     </Link>
                     .
@@ -304,10 +331,15 @@ export const RegisterForm = () => {
 
             {/* TODO: arrumar hover do botão */}
             <Button
+              disabled={isSubmitting}
               type="submit"
-              className="w-full py-2 bg-white rounded-[30px]"
+              className="w-full py-2 bg-white rounded-[30px] disabled:brightness-75 disabled:cursor-not-allowed"
             >
-              <span className="text-gradient">Cadastrar</span>
+              {isSubmitting ? (
+                <span className="text-gradient">Cadastrando</span>
+              ) : (
+                <span className="text-gradient">Cadastrar</span>
+              )}
             </Button>
           </motion.form>
         </Form>
@@ -319,7 +351,10 @@ export const RegisterForm = () => {
       >
         <span className="text-white text-base font-normal text-center">
           Já possui uma conta?{" "}
-          <Link href="/login" className="underline">
+          <Link
+            href="/login"
+            className={cn("underline", { "pointer-events-none": isSubmitting })}
+          >
             Clique aqui para entrar
           </Link>
         </span>

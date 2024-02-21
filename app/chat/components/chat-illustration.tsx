@@ -37,6 +37,7 @@ export const ChatIllustration = () => {
               width={380}
               height={380}
               className="object-center"
+              priority
             />
           </motion.div>
 
@@ -50,6 +51,7 @@ export const ChatIllustration = () => {
               width={710}
               height={500}
               className="object-center"
+              priority
             />
           </motion.div>
         </motion.div>
