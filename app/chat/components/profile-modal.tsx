@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
 import { toast } from "react-hot-toast";
 import { signOut, useSession } from "next-auth/react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { BlockedProfileBox } from "./blocked-profile-box";
@@ -13,6 +14,10 @@ import useContactStore from "@/stores/use-contact-store";
 import { cn } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadthing";
 import { BlockedUserWithProfileBlocked, ProfileBoxType } from "@/types";
+import {
+  boxModalAnimation,
+  containerModalAnimation,
+} from "@/constants/framer-animation/modal-animation";
 
 interface ProfileModalProps {
   currentUser: ProfileBoxType | null;
@@ -172,10 +177,19 @@ export const ProfileModal = ({
   }
 
   return (
-    <>
+    <AnimatePresence>
       {isProfileModalOpen && (
-        <div className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle">
-          <div className="w-full max-w-[700px] bg-gray-secondary px-9 py-6 rounded-[30px] inline-block align-middle">
+        <motion.div
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={containerModalAnimation}
+          className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle"
+        >
+          <motion.div
+            variants={boxModalAnimation}
+            className="w-full max-w-[700px] bg-gray-secondary px-9 py-6 rounded-[30px] inline-block align-middle"
+          >
             <div className="flex justify-end">
               <Button
                 onClick={handleCloselModal}
@@ -364,9 +378,9 @@ export const ProfileModal = ({
                 <span className="text-gradient">Sair</span>
               </Button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };

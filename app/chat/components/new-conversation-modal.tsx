@@ -3,13 +3,17 @@
 import { X } from "lucide-react";
 import { User } from "@prisma/client";
 import { useState, useEffect, ChangeEvent } from "react";
-import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewContactBox } from "./new-contact-box";
 import useContactStore from "@/stores/use-contact-store";
+import {
+  boxModalAnimation,
+  containerModalAnimation,
+} from "@/constants/framer-animation/modal-animation";
 
 interface NewConversationModalProps {
   newContacts: User[];
@@ -56,10 +60,19 @@ export const NewConversationModal = ({
   }
 
   return (
-    <>
+    <AnimatePresence>
       {isNewConversationModalOpen && (
-        <div className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle">
-          <div className="w-full max-w-[700px] bg-gray-secondary px-9 py-6 rounded-[30px] inline-block align-middle">
+        <motion.div
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={containerModalAnimation}
+          className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle"
+        >
+          <motion.div
+            variants={boxModalAnimation}
+            className="w-full max-w-[700px] bg-gray-secondary px-9 py-6 rounded-[30px] inline-block align-middle"
+          >
             <div className="flex justify-end mb-9">
               <Button
                 onClick={closeNewConversationModal}
@@ -126,10 +139,10 @@ export const NewConversationModal = ({
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
 

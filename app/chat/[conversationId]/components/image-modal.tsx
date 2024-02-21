@@ -1,7 +1,12 @@
 import { X } from "lucide-react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
+import {
+  boxModalAnimation,
+  containerModalAnimation,
+} from "@/constants/framer-animation/modal-animation";
 
 interface ImageModalProps {
   fileUrl: string | null;
@@ -15,10 +20,19 @@ export const ImageModal = ({
   closeModal,
 }: ImageModalProps) => {
   return (
-    <>
+    <AnimatePresence>
       {isImageModalOpen && fileUrl ? (
-        <div className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle">
-          <div className="relative w-full h-[350px] max-w-[700px] bg-[#202730] rounded-[30px] overflow-hidden inline-block align-middle">
+        <motion.div
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          variants={containerModalAnimation}
+          className="w-screen h-screen bg-gray-primary/70 fixed top-0 left-0 right-0 bottom-0 z-50 text-center overflow-auto p-6 after:h-full after:content-[''] after:inline-block after:align-middle"
+        >
+          <motion.div
+            variants={boxModalAnimation}
+            className="relative w-full h-[700px] max-w-[700px] bg-[#202730] rounded-[30px] overflow-hidden inline-block align-middle"
+          >
             <Button
               onClick={closeModal}
               variant="link"
@@ -35,9 +49,9 @@ export const ImageModal = ({
                 className="object-cover object-center"
               />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       ) : null}
-    </>
+    </AnimatePresence>
   );
 };
