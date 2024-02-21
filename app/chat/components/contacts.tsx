@@ -70,7 +70,7 @@ export const Contacts = ({
           }
 
           return currentConversation;
-        }),
+        })
       );
     };
 
@@ -84,7 +84,7 @@ export const Contacts = ({
       <div
         className={cn(
           "w-full min-h-screen bg-gray-secondary flex-col gap-y-12 lg:w-[450px]",
-          isOpen ? "hidden lg:flex" : "flex",
+          isOpen ? "hidden lg:flex" : "flex"
         )}
       >
         <Link href="/" className="w-full flex justify-center items-center mt-6">

@@ -15,6 +15,7 @@ import { BlockedUser, Conversation, User } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import useOtherUser from "@/hooks/useOtherUser";
 import useDefaultUserColor from "@/hooks/useDefaultUserColor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ConversationHeaderProps {
   conversation: Conversation & {
@@ -47,6 +48,10 @@ export const ConversationHeader = ({
       .catch((error) => console.error(error));
   }
 
+  if (!otherUser) {
+    return <ConversationHeaderSkeleton />;
+  }
+
   return (
     <div className="w-full flex items-center justify-between mb-12">
       <div className="flex items-center gap-x-2 sm:gap-x-5">
@@ -57,7 +62,7 @@ export const ConversationHeader = ({
         <div
           className={cn(
             "relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center",
-            `${!otherUser ? defaultUserColor : ""}`
+            `${!otherUser ? defaultUserColor : ""}`,
           )}
         >
           {otherUser?.image ? (
@@ -108,6 +113,24 @@ export const ConversationHeader = ({
           )}
         </PopoverContent>
       </Popover>
+    </div>
+  );
+};
+
+const ConversationHeaderSkeleton = () => {
+  return (
+    <div className="w-full flex items-center justify-between mb-12">
+      <div className="flex items-center gap-x-2 sm:gap-x-5">
+        <Skeleton className="h-10 w-6 mx-4" />
+
+        <div className="relative w-14 min-w-[56px] max-w-[56px] h-14 min-h-[56px] max-h-[56px] rounded-full overflow-hidden flex items-center justify-center">
+          <Skeleton className="w-full h-full" />
+        </div>
+
+        <Skeleton className="w-40 h-6" />
+      </div>
+
+      <Skeleton className="w-4 h-8" />
     </div>
   );
 };

@@ -10,6 +10,7 @@ import useConversation from "@/hooks/useConversation";
 import { FullMessageType } from "@/types";
 import { pusherClient } from "@/lib/pusher";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MessagesBoxProps {
   initialMessages: FullMessageType[];
@@ -22,7 +23,7 @@ export const MessagesBox = ({
 }: MessagesBoxProps) => {
   const [messages, setMessages] = useState(initialMessages);
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { conversationId } = useConversation(conversationParams);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,8 +71,11 @@ export const MessagesBox = ({
 
   useEffect(() => {
     bottomRef?.current?.scrollIntoView({ block: "end" });
-    console.log("scrollado");
-  }, [messages]);
+  }, [messages, status]);
+
+  if (status === "loading") {
+    return <MessagesBoxSkeleton />;
+  }
 
   return (
     <ScrollArea>
@@ -88,5 +92,23 @@ export const MessagesBox = ({
 
       <div ref={bottomRef} />
     </ScrollArea>
+  );
+};
+
+const MessagesBoxSkeleton = () => {
+  return (
+    <div className="w-full flex-1 flex flex-col gap-y-6">
+      <div className="w-full flex flex-row-reverse items-center justify-start group">
+        <Skeleton className="w-2/3 h-40 rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl rounded-br-none relative pb-2 xl:w-2/5 cursor-pointer" />
+      </div>
+
+      <div className="w-full flex flex-row items-center justify-start group">
+        <Skeleton className="w-2/3 h-32 rounded-tl-3xl rounded-tr-3xl rounded-bl-none rounded-br-3xl relative pb-2 xl:w-2/5 cursor-pointer" />
+      </div>
+
+      <div className="w-full flex flex-row-reverse items-center justify-start group">
+        <Skeleton className="w-2/3 h-52 rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl rounded-br-none relative pb-2 xl:w-2/5 cursor-pointer" />
+      </div>
+    </div>
   );
 };

@@ -8,7 +8,7 @@ import { ConversationHeader } from "./conversation-header";
 import { MessageForm } from "./message-form";
 import { MessagesBox } from "./messages-box";
 import { SendImageModal } from "./send-image-modal";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, Suspense } from "react";
 import { FullMessageType } from "@/types";
 
 interface ConversationProps {
@@ -36,7 +36,10 @@ export const Conversation = ({
         initialMessages={initialMessages}
         conversationParams={conversationParams}
       />
-      <MessageForm conversationParams={conversationParams} />
+      <MessageForm
+        conversationParams={conversationParams}
+        isOtherUserBlocked={isOtherUserBlocked}
+      />
       <SendImageModal conversationId={conversation.id} />
     </div>
   );
